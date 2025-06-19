@@ -1,0 +1,32 @@
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Giriş Yap</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="login-body">
+  <div class="login-container">
+    <h2>Patron Panel Giriş</h2>
+    <form id="loginForm">
+      <input type="password" id="password" placeholder="Şifre" required />
+      <button type="submit">Giriş Yap</button>
+      <p id="errorMsg" class="error">Hatalı şifre!</p>
+    </form>
+  </div>
+
+  <script>
+    document.getElementById("loginForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const pwd = document.getElementById("password").value;
+      if (pwd === "patronsorgu") {
+        window.location.href = "/anasayfa";
+      } else {
+        document.getElementById("errorMsg").style.display = "block";
+      }
+    });
+  </script>
+</body>
+</html>
