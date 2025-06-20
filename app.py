@@ -1,24 +1,34 @@
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, session, redirect, url_for, send_from_directory
 import requests
 
 app = Flask(__name__)
+app.secret_key = "f3d8a1b7c9e24f5d8a9b6c1e2f7d3a4b"  # Güvenli secret key
 
-# Giriş sayfası
-@app.route("/")
+@app.route("/", methods=["GET", "POST"])
 def login():
-    return send_from_directory(".", "login.html")
+    if request.method == "POST":
+        pwd = request.form.get("password", "")
+        if pwd == "patronsorgu":
+            session["logged_in"] = True
+            return redirect(url_for("panel"))
+        else:
+            return send_from_directory(".", "login.html", 401)
+    else:
+        if session.get("logged_in"):
+            return redirect(url_for("panel"))
+        return send_from_directory(".", "login.html")
 
-# Panel sayfası
 @app.route("/anasayfa")
 def panel():
+    if not session.get("logged_in"):
+        return redirect(url_for("login"))
     return send_from_directory(".", "anasayfa.html")
 
-# Static dosyalar (CSS, JS, vs.)
-@app.route("/<path:path>")
-def static_files(path):
-    return send_from_directory(".", path)
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect(url_for("login"))
 
-# Cevap filtreleme
 def filtrele_veri(metin):
     satirlar = metin.strip().splitlines()
     temiz = []
@@ -29,9 +39,11 @@ def filtrele_veri(metin):
         temiz.append(s)
     return "\n".join(temiz)
 
-# API sorgulama
 @app.route("/api/sorgu", methods=["POST"])
 def sorgu():
+    if not session.get("logged_in"):
+        return {"success": False, "message": "Yetkisiz erişim"}, 401
+
     data = request.json
     api = data.get("api")
     sorgu = data.get("sorgu")
@@ -41,37 +53,43 @@ def sorgu():
     soyad = data.get("soyad", "")
     il = data.get("il", "")
 
+    # API 1 yeni URL'ler
     base_url = "http://ramowolf.xyz/ramowlf" if api == "1" else "https://api.hexnox.pro/sowixapi"
 
-    if sorgu == "1":
+    if sorgu == "1":  # Sülale
         url = f"{base_url}/sulale.php?tc={tc}"
-    elif sorgu == "2":
-        url = f"{base_url}/tcpro.php?tc={tc}"
-    elif sorgu == "3":
+    elif sorgu == "2":  # TC Bilgi
+        url = f"{base_url}/tcpro.php?tc={tc}" if api == "1" else f"{base_url}/tcpro.php?tc={tc}"
+    elif sorgu == "3":  # Adres
         url = f"{base_url}/adres.php?tc={tc}"
-    elif sorgu == "4":
-        url = f"{base_url}/adsoyad.php?ad={ad}&soyad={soyad}&il={il}" if api == "1" else f"{base_url}/adsoyadilce.php?ad={ad}&soyad={soyad}&il={il}"
-    elif sorgu == "5":
+    elif sorgu == "4":  # Ad+Soyad+İl
+        url = f"{base_url}/adsoyad.php?ad={ad}" if api == "1" else f"{base_url}/adsoyadilce.php?ad={ad}"
+        url += f"&soyad={soyad}&il={il}"
+    elif sorgu == "5":  # Aile
         url = f"{base_url}/aile.php?tc={tc}"
-    elif sorgu == "6":
-        url = f"{base_url}/gsmtc.php?gsm={gsm}" if api == "1" else f"{base_url}/gsmdetay.php?gsm={gsm}"
-    elif sorgu == "7":
+    elif sorgu == "6":  # Numaradan TC
+        url = f"{base_url}/gsmtc.php?gsm={gsm}"
+    elif sorgu == "7":  # TC'den Numara
         url = f"{base_url}/tcgsm.php?tc={tc}"
-    elif sorgu == "8":
-        return jsonify(success=True, result="Instagram Jack sorgusu - sonuç yok")
+    elif sorgu == "8":  # Instagram Jack (sabit içerik)
+        # Bu sorgu API çağrısı yapmaz, frontend'de işleniyor
+        return {"success": True, "result": "bunlara inanıyor musun? mal insta=@by_.ram"}
     else:
-        return jsonify(success=False, message="Geçersiz sorgu tipi")
+        return {"success": False, "message": "Geçersiz sorgu tipi"}
 
     try:
         response = requests.get(url, timeout=30)
         if response.status_code == 200 and response.text.strip():
             filtrelenmis = filtrele_veri(response.text)
-            return jsonify(success=True, result=filtrelenmis)
+            return {"success": True, "result": filtrelenmis}
         else:
-            return jsonify(success=False, message="Boş yanıt döndü.")
+            return {"success": False, "message": "Boş yanıt döndü."}
     except requests.exceptions.RequestException as e:
-        return jsonify(success=False, message=f"API hatası: {str(e)}")
+        return {"success": False, "message": f"API hatası: {str(e)}"}
 
-# Sunucu başlatma
+@app.route("/<path:path>")
+def static_files(path):
+    return send_from_directory(".", path)
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
