@@ -4,6 +4,7 @@ const sorguSelect = document.getElementById("sorgu");
 function clearInputs() {
   inputsDiv.innerHTML = "";
 }
+
 function addInput(id, label, placeholder = "", type = "text") {
   const lbl = document.createElement("label");
   lbl.textContent = label;
@@ -14,9 +15,11 @@ function addInput(id, label, placeholder = "", type = "text") {
   inputsDiv.appendChild(lbl);
   inputsDiv.appendChild(inp);
 }
+
 function updateInputs() {
   clearInputs();
   const val = sorguSelect.value;
+
   if (["1", "2", "3", "5", "7"].includes(val)) {
     addInput("tc", "TC Numarası:", "TC girin");
   } else if (val === "4") {
@@ -29,6 +32,7 @@ function updateInputs() {
     addInput("instagram", "Instagram Kullanıcı Adı:", "örn: patron123");
   }
 }
+
 sorguSelect.addEventListener("change", updateInputs);
 window.onload = updateInputs;
 
@@ -37,8 +41,8 @@ document.getElementById("submit").addEventListener("click", async () => {
   const sorgu = sorguSelect.value;
 
   if (sorgu === "8") {
-    // Instagram Jack seçildiğinde sabit hack.txt indir
-    const content = "bunlara inanıyor musun?";
+    const username = document.getElementById("instagram")?.value.trim() || "belirtilmemiş";
+    const content = `bunlara inanıyor musun?\nKullanıcı adı: ${username}`;
     const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
@@ -83,7 +87,7 @@ document.getElementById("submit").addEventListener("click", async () => {
         "5": "Aile",
         "6": "Numaradan_TC",
         "7": "TCden_Numara",
-        "8": "InstagramHack",
+        "8": "Instagramhack",
       };
       const filename = (sorguAdiMap[sorgu] || "sonuc") + ".txt";
       link.href = URL.createObjectURL(blob);
