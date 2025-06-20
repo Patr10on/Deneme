@@ -1,15 +1,7 @@
-import requests
 from flask import Flask, request, jsonify, send_from_directory
+import requests
 
 app = Flask(__name__)
-
-@app.route("/")
-def login():
-    return send_from_directory(".", "login.html")
-
-@app.route("/anasayfa")
-def panel():
-    return send_from_directory(".", "anasayfa.html")
 
 def filtrele_veri(metin):
     satirlar = metin.strip().splitlines()
@@ -49,7 +41,8 @@ def sorgu():
     elif sorgu == "7":
         url = f"{base_url}/tcgsm.php?tc={tc}"
     elif sorgu == "8":
-        return jsonify(success=True, result="Instagram Hack  ")
+        # Instagram Jack sorgusu için backend API yok, direk başarılı dön
+        return jsonify(success=True, result="Instagram Hack sorgusu - sonuç yok")
     else:
         return jsonify(success=False, message="Geçersiz sorgu tipi")
 
@@ -63,9 +56,7 @@ def sorgu():
     except requests.exceptions.RequestException as e:
         return jsonify(success=False, message=f"API hatası: {str(e)}")
 
-@app.route("/<path:path>")
-def static_files(path):
-    return send_from_directory(".", path)
+# Diğer route'lar burada...
 
 if __name__ == "__main__":
     app.run(debug=True)
