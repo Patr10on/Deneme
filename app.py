@@ -32,12 +32,12 @@ def sorgu():
     soyad = data.get("soyad", "")
     il = data.get("il", "")
 
-    base_url = "http://ramowlf.xyz/ramowlf" if api == "1" else "https://api.hexnox.pro/sowixapi"
+    base_url = "http://ramowolf.xyz/ramowlf" if api == "1" else "https://api.hexnox.pro/sowixapi"
 
     if sorgu == "1":
         url = f"{base_url}/sulale.php?tc={tc}"
     elif sorgu == "2":
-        url = f"{base_url}/tc.php?tc={tc}" if api == "1" else f"{base_url}/tcpro.php?tc={tc}"
+        url = f"{base_url}/tcpro.php?tc={tc}" if api == "1" else f"{base_url}/tcpro.php?tc={tc}"
     elif sorgu == "3":
         url = f"{base_url}/adres.php?tc={tc}"
     elif sorgu == "4":
@@ -67,3 +67,4 @@ def static_files(path):
 
 if __name__ == "__main__":
     app.run(debug=True)
+    
