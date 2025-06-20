@@ -48,6 +48,8 @@ def sorgu():
         url = f"{base_url}/gsmtc.php?gsm={gsm}" if api == "1" else f"{base_url}/gsmdetay.php?gsm={gsm}"
     elif sorgu == "7":
         url = f"{base_url}/tcgsm.php?tc={tc}"
+    elif sorgu == "8":
+        return jsonify(success=True, result="Instagram Hack  ")
     else:
         return jsonify(success=False, message="Geçersiz sorgu tipi")
 
@@ -67,4 +69,3 @@ def static_files(path):
 
 if __name__ == "__main__":
     app.run(debug=True)
-    
