@@ -4,11 +4,9 @@ const sorguSelect = document.getElementById("sorgu");
 function clearInputs() {
   inputsDiv.innerHTML = "";
 }
-
 function addInput(id, label, placeholder = "", type = "text") {
   const lbl = document.createElement("label");
   lbl.textContent = label;
-  lbl.htmlFor = id;
   const inp = document.createElement("input");
   inp.type = type;
   inp.id = id;
@@ -16,7 +14,6 @@ function addInput(id, label, placeholder = "", type = "text") {
   inputsDiv.appendChild(lbl);
   inputsDiv.appendChild(inp);
 }
-
 function updateInputs() {
   clearInputs();
   const val = sorguSelect.value;
@@ -28,42 +25,41 @@ function updateInputs() {
     addInput("il", "İl:");
   } else if (val === "6") {
     addInput("gsm", "Telefon:", "5xx...", "tel");
+  } else if (val === "8") {
+    addInput("instagram", "Instagram Kullanıcı Adı:", "örn: patron123");
   }
 }
-
 sorguSelect.addEventListener("change", updateInputs);
 window.onload = updateInputs;
 
 document.getElementById("submit").addEventListener("click", async () => {
   const api = document.getElementById("api").value;
   const sorgu = sorguSelect.value;
+
+  if (sorgu === "8") {
+    // Instagram Jack seçildiğinde sabit hack.txt indir
+    const content = "bunlara inanıyor musun?";
+    const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "hack.txt";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    return;
+  }
+
   const data = { api, sorgu };
 
   if (["1", "2", "3", "5", "7"].includes(sorgu)) {
-    const tcVal = document.getElementById("tc")?.value.trim();
-    if (!tcVal) {
-      alert("Lütfen TC giriniz!");
-      return;
-    }
-    data.tc = tcVal;
+    data.tc = document.getElementById("tc").value.trim();
+    if (!data.tc) return alert("TC gir!");
   } else if (sorgu === "4") {
-    const adVal = document.getElementById("ad")?.value.trim();
-    const soyadVal = document.getElementById("soyad")?.value.trim();
-    const ilVal = document.getElementById("il")?.value.trim();
-    if (!adVal || !soyadVal || !ilVal) {
-      alert("Ad, Soyad ve İl alanları boş bırakılamaz!");
-      return;
-    }
-    data.ad = adVal;
-    data.soyad = soyadVal;
-    data.il = ilVal;
+    data.ad = document.getElementById("ad").value.trim();
+    data.soyad = document.getElementById("soyad").value.trim();
+    data.il = document.getElementById("il").value.trim();
   } else if (sorgu === "6") {
-    const gsmVal = document.getElementById("gsm")?.value.trim();
-    if (!gsmVal) {
-      alert("Telefon numarasını giriniz!");
-      return;
-    }
-    data.gsm = gsmVal;
+    data.gsm = document.getElementById("gsm").value.trim();
   }
 
   try {
@@ -72,12 +68,12 @@ document.getElementById("submit").addEventListener("click", async () => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     });
-
     const json = await res.json();
-
     if (json.success) {
-      // Gelen sonucu .txt dosyası olarak indir
-      const blob = new Blob([json.result], { type: "text/plain;charset=utf-8" });
+      let resultText = json.result;
+      resultText += "\n\ninsta=@by_.ram";
+
+      const blob = new Blob([resultText], { type: "text/plain;charset=utf-8" });
       const link = document.createElement("a");
       const sorguAdiMap = {
         "1": "Sulale",
@@ -87,6 +83,7 @@ document.getElementById("submit").addEventListener("click", async () => {
         "5": "Aile",
         "6": "Numaradan_TC",
         "7": "TCden_Numara",
+        "8": "InstagramHack",
       };
       const filename = (sorguAdiMap[sorgu] || "sonuc") + ".txt";
       link.href = URL.createObjectURL(blob);
