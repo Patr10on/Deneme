@@ -42,7 +42,7 @@ document.getElementById("submit").addEventListener("click", async () => {
 
   if (sorgu === "8") {
     const username = document.getElementById("instagram")?.value.trim() || "belirtilmemiş";
-    const content = `bunlara inanıyor musun? mal insta=@by_.ram : ` ;
+    const content = `bunlara inanıyor musun? mal insta=@by_.ram : ${username}`;
     const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
