@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Galaksi Giriş - İnce Işık Huzmeli Etkileşimli Yıldızlar</title>
+<title>Patron Panel</title>
 <style>
   body {
     margin: 0;
@@ -18,7 +18,6 @@
     color: #c0f7ff;
   }
 
-  /* Nebula */
   #nebula {
     position: fixed;
     top: 10%;
@@ -34,7 +33,6 @@
     z-index: -12;
   }
 
-  /* Canvas for stars */
   #starCanvas {
     position: fixed;
     top: 0; left: 0;
@@ -45,29 +43,6 @@
     display: block;
   }
 
-  /* Shooting stars container */
-  #shootingStars {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100vw;
-    height: 100vh;
-    pointer-events: none;
-    z-index: -10;
-    overflow: visible;
-  }
-
-  .shooting-star {
-    position: absolute;
-    width: 150px;
-    height: 2px;
-    background: linear-gradient(-45deg, white, rgba(255,255,255,0));
-    border-radius: 100%;
-    opacity: 0;
-    transform: rotate(45deg);
-    animation-timing-function: linear;
-  }
-
-  /* Login panel */
   .login-wrapper {
     position: relative;
     width: 320px;
@@ -78,11 +53,9 @@
       0 0 15px #00ffffaa,
       0 0 40px #00ffff55;
     animation: fadeInSlide 1s ease-out forwards, lightBeam 2.5s ease-out forwards;
-    animation-fill-mode: forwards;
     text-align: left;
     user-select: none;
     z-index: 10;
-    overflow: hidden;
   }
 
   @keyframes fadeInSlide {
@@ -90,17 +63,10 @@
     100% { opacity: 1; transform: translateY(0); }
   }
 
-  /* Işık huzmesi efekti (sonda ince ve hafif ışık kalacak) */
   @keyframes lightBeam {
-    0% {
-      box-shadow: 0 0 0 0 rgba(0, 255, 255, 0);
-    }
-    50% {
-      box-shadow: 0 0 40px 20px rgba(0, 255, 255, 0.7);
-    }
-    100% {
-      box-shadow: 0 0 10px 4px rgba(0, 255, 255, 0.2);
-    }
+    0% { box-shadow: 0 0 0 0 rgba(0, 255, 255, 0); }
+    50% { box-shadow: 0 0 40px 20px rgba(0, 255, 255, 0.7); }
+    100% { box-shadow: 0 0 10px 4px rgba(0, 255, 255, 0.2); }
   }
 
   h2 {
@@ -149,8 +115,6 @@
       0 0 10px #00eaff99,
       0 0 30px #00eaff66;
     transition: background-color 0.3s, color 0.3s, box-shadow 0.3s;
-    user-select: none;
-    z-index: 5;
   }
 
   .glow-button:hover {
@@ -164,31 +128,11 @@
 
   @keyframes pulseGlow {
     0%, 100% {
-      box-shadow:
-        0 0 20px #00eaffcc,
-        0 0 50px #00eaffaa;
+      box-shadow: 0 0 20px #00eaffcc, 0 0 50px #00eaffaa;
     }
     50% {
-      box-shadow:
-        0 0 40px #00eaffff,
-        0 0 80px #00eaffff;
+      box-shadow: 0 0 40px #00eaffff, 0 0 80px #00eaffff;
     }
-  }
-
-  .error {
-    color: #ff5555;
-    margin-top: 0.8em;
-    font-size: 14px;
-    font-weight: 600;
-    text-align: center;
-    display: none;
-    animation: shake 0.3s ease-in-out 3;
-  }
-
-  @keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    25%, 75% { transform: translateX(-6px); }
-    50% { transform: translateX(6px); }
   }
 </style>
 </head>
@@ -196,19 +140,16 @@
 
   <div id="nebula"></div>
   <canvas id="starCanvas"></canvas>
-  <div id="shootingStars"></div>
 
   <div class="login-wrapper">
     <h2>Giriş Paneli</h2>
-    <form id="loginForm" autocomplete="off" novalidate>
-      <input type="password" id="password" placeholder="Şifre" required />
+    <form method="POST" action="/" autocomplete="off">
+      <input type="password" name="password" placeholder="Şifre" required />
       <button type="submit" class="glow-button">Giriş Yap</button>
-      <p id="errorMsg" class="error">Hatalı şifre!</p>
     </form>
   </div>
 
 <script>
-  // Canvas setup
   const canvas = document.getElementById('starCanvas');
   const ctx = canvas.getContext('2d');
   let width, height;
@@ -221,11 +162,8 @@
   window.addEventListener('resize', resize);
   resize();
 
-  // Star class with color variation
   class Star {
-    constructor() {
-      this.reset();
-    }
+    constructor() { this.reset(); }
     reset() {
       this.x = Math.random() * width;
       this.y = Math.random() * height;
@@ -233,16 +171,8 @@
       this.speed = (Math.random() * 0.5) + 0.05;
       this.opacity = Math.random();
       this.opacityChange = (Math.random() * 0.02) + 0.005;
-      this.color = this.pickColor();
-    }
-    pickColor() {
-      // Beyaz, hafif mavi, sarı tonları
-      const colors = [
-        '255, 255, 255',
-        '180, 210, 255',
-        '255, 240, 180'
-      ];
-      return colors[Math.floor(Math.random() * colors.length)];
+      const colors = ['255, 255, 255','180, 210, 255','255, 240, 180'];
+      this.color = colors[Math.floor(Math.random() * colors.length)];
     }
     update() {
       this.x += this.speed;
@@ -263,84 +193,17 @@
   }
 
   const stars = [];
-  const starCount = 150;
-  for(let i=0; i<starCount; i++) stars.push(new Star());
-
-  // Mouse interaction for stars
-  let mouseX = width/2;
-  let mouseY = height/2;
-  window.addEventListener('mousemove', e => {
-    mouseX = e.clientX;
-    mouseY = e.clientY;
-  });
+  for(let i=0; i<150; i++) stars.push(new Star());
 
   function animate() {
     ctx.clearRect(0,0,width,height);
     stars.forEach(s => {
-      // Hafif fareye doğru çekim efekti
-      const dx = mouseX - s.x;
-      const dy = mouseY - s.y;
-      const dist = Math.sqrt(dx*dx + dy*dy);
-      if(dist < 150) {
-        s.opacity += 0.05;
-        s.x += dx * 0.002;
-        s.y += dy * 0.002;
-      } else {
-        s.opacity -= 0.01;
-      }
-      if(s.opacity > 1) s.opacity = 1;
-      if(s.opacity < 0.1) s.opacity = 0.1;
-
       s.update();
       s.draw();
     });
     requestAnimationFrame(animate);
   }
   animate();
-
-  // Kayan yıldızlar (shooting stars)
-  const shootingContainer = document.getElementById('shootingStars');
-
-  function createShootingStar() {
-    const star = document.createElement('div');
-    star.classList.add('shooting-star');
-    star.style.top = Math.random() * 30 + 'vh';
-    star.style.left = '-150px';
-    const duration = Math.random() * 1 + 0.8;
-    star.style.animationDuration = duration + 's';
-    shootingContainer.appendChild(star);
-
-    star.style.opacity = '1';
-    star.style.transform = 'rotate(45deg) translateX(0)';
-
-    star.addEventListener('animationend', () => {
-      shootingContainer.removeChild(star);
-    });
-  }
-
-  setInterval(() => {
-    if(Math.random() < 0.6) {
-      createShootingStar();
-    }
-  }, 1200);
-
-  // Giriş formu
-  const form = document.getElementById("loginForm");
-  const errorMsg = document.getElementById("errorMsg");
-  form.addEventListener("submit", (e) => {
-    e.preventDefault();
-    errorMsg.style.display = "none";
-    const pwd = form.password.value.trim();
-    if(pwd === "patronsorgu") {
-      window.location.href = "/anasayfa";
-    } else {
-      errorMsg.style.display = "block";
-      errorMsg.style.animation = 'none';
-      errorMsg.offsetHeight;
-      errorMsg.style.animation = null;
-      form.password.focus();
-    }
-  });
 </script>
 
 </body>
