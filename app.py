@@ -1,10 +1,7 @@
+from flask import Flask, request, redirect, send_from_directory, jsonify
 import requests
-from flask import Flask, request, jsonify, send_from_directory, redirect, url_for, session
-from flask_cors import CORS
 
 app = Flask(__name__)
-CORS(app)
-
 
 # 🔐 Giriş (şifre kontrolü)
 @app.route("/", methods=["GET", "POST"])
@@ -12,14 +9,18 @@ def login():
     if request.method == "POST":
         pwd = request.form.get("password", "")
         if pwd == "patronsorgu":
-            session["authenticated"] = True
-            return redirect("/anasayfa")
+            return redirect("/anasayfa?auth=1")
         else:
-            return send_from_directory(".", "login.html")  # Şifre yanlışsa tekrar göster
+            return send_from_directory(".", "login.html")
     return send_from_directory(".", "login.html")
 
-# 🔒 Şifreli giriş yapılmadıysa /anasayfa'ya erişim engellenir
-
+# 🏠 Anasayfa (şifre kontrolü URL parametresiyle)
+@app.route("/anasayfa")
+def anasayfa():
+    if request.args.get("auth") == "1":
+        return send_from_directory(".", "anasayfa.html")
+    else:
+        return redirect("/")
 
 # 🔧 Sonuçları temizleme fonksiyonu
 def filtrele_veri(metin):
@@ -35,9 +36,9 @@ def filtrele_veri(metin):
 # 🔄 API sorgu işlemi
 @app.route("/api/sorgu", methods=["POST"])
 def sorgu():
-    if not session.get("authenticated"):
+    if request.args.get("auth") != "1":
         return jsonify(success=False, message="Yetkisiz erişim")
-    
+
     data = request.json
     api = data.get("api")
     sorgu = data.get("sorgu")
@@ -76,11 +77,11 @@ def sorgu():
     except requests.exceptions.RequestException as e:
         return jsonify(success=False, message=f"API hatası: {str(e)}")
 
-# 🔧 Statik dosyaları sunmak için
+# 📂 Statik dosyalar
 @app.route("/<path:path>")
 def static_files(path):
     return send_from_directory(".", path)
 
-# 🔁 Termux veya sunucuda dış erişime açık çalıştırmak için
+# 🚀 Uygulama başlat
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
