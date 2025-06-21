@@ -1,19 +1,24 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Giriş Yap</title>
-  <link rel="stylesheet" href="style.css" />
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Galaksi Giriş - Işık Halkalı Animasyon</title>
 </head>
-<body class="login-body">
-  <div class="login-container">
-    <h2>Patron Panel Giriş</h2>
-    <form method="POST" action="/">
-      <input type="password" name="password" placeholder="Şifre" required />
-      <button type="submit">Giriş Yap</button>
+<body>
+
+  <div id="nebula"></div>
+  <canvas id="starCanvas"></canvas>
+  <div id="shootingStars"></div>
+
+  <div class="login-wrapper">
+    <h2>Giriş Paneli</h2>
+    <form id="loginForm" autocomplete="off" novalidate>
+      <input type="password" id="password" placeholder="Şifre" required />
+      <button type="submit" class="glow-button">Giriş Yap</button>
+      <p id="errorMsg" class="error">Hatalı şifre!</p>
     </form>
-    <p id="errorMsg" class="error" style="display:none;">Hatalı şifre!</p>
   </div>
+
 </body>
 </html>
