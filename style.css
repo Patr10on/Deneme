@@ -1,22 +1,30 @@
+/* Genel gövde stili */
 body {
   margin: 0;
   font-family: Arial, sans-serif;
   background: #1e293b;
   color: white;
 }
+
+/* Giriş sayfası ortalama stili */
 .login-body {
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100vh;
 }
+
+/* Giriş kutusu kapsayıcısı */
 .login-container {
   background: #334155;
   padding: 2em;
   border-radius: 8px;
   width: 300px;
+  box-sizing: border-box;
 }
-input, button {
+
+/* Input ve buton ortak stili */
+input, button, select, textarea {
   display: block;
   width: 100%;
   margin-top: 1em;
@@ -24,30 +32,49 @@ input, button {
   font-size: 16px;
   border: none;
   border-radius: 4px;
+  box-sizing: border-box;
 }
+
+/* Buton özel stili */
 button {
   background-color: #0ea5e9;
   color: white;
   cursor: pointer;
+  transition: background-color 0.3s ease;
 }
+
+button:hover {
+  background-color: #0284c7;
+}
+
+/* Hata mesajı */
 .error {
-  color: red;
+  color: #f87171; /* kırmızı ton */
   display: none;
   margin-top: 10px;
+  font-weight: 600;
 }
+
+/* Daha büyük panel için kapsayıcı */
 .panel-container {
   max-width: 600px;
   margin: 2em auto;
   background: #334155;
   padding: 2em;
   border-radius: 8px;
+  box-sizing: border-box;
 }
-select, textarea {
-  width: 100%;
-  padding: 10px;
-  margin-top: 1em;
-}
+
+/* Label stili */
 label {
   display: block;
   margin-top: 1em;
+  font-weight: 600;
+}
+
+/* Select ve textarea için padding ve margin zaten input ile ortak */
+/* İstersen placeholder renklerini de açabilirim */
+input::placeholder,
+textarea::placeholder {
+  color: #94a3b8;
 }
