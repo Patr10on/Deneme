@@ -5,8 +5,6 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
 
-# 🔐 Güçlü ve rastgele bir secret key (oturumları korur)
-app.secret_key = "b2c4f5a19e7d63b8a09f4c1d2e8b75a6c3f0e1d2948765b1f3a2d7e9c6b8a5d4"
 
 # 🔐 Giriş (şifre kontrolü)
 @app.route("/", methods=["GET", "POST"])
@@ -21,11 +19,7 @@ def login():
     return send_from_directory(".", "login.html")
 
 # 🔒 Şifreli giriş yapılmadıysa /anasayfa'ya erişim engellenir
-@app.route("/anasayfa")
-def panel():
-    if not session.get("authenticated"):
-        return redirect("/")
-    return send_from_directory(".", "anasayfa.html")
+
 
 # 🔧 Sonuçları temizleme fonksiyonu
 def filtrele_veri(metin):
