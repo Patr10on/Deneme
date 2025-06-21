@@ -1,141 +1,9 @@
-// --- Giriş Paneli Formu ---
-
-const form = document.getElementById("loginForm");
-const errorMsg = document.getElementById("errorMsg");
-form.addEventListener("submit", (e) => {
-  e.preventDefault();
-  errorMsg.style.display = "none";
-  const pwd = form.password.value.trim();
-  if (pwd === "patronsorgu") {
-    window.location.href = "/anasayfa";
-  } else {
-    errorMsg.style.display = "block";
-    errorMsg.style.animation = 'none';
-    errorMsg.offsetHeight; // reflow
-    errorMsg.style.animation = null;
-    form.password.focus();
-  }
-});
-
-// --- Yıldız ve Nebula Animasyonları ---
-
-const canvas = document.getElementById('starCanvas');
-const ctx = canvas.getContext('2d');
-let width, height;
-function resize() {
-  width = window.innerWidth;
-  height = window.innerHeight;
-  canvas.width = width;
-  canvas.height = height;
-}
-window.addEventListener('resize', resize);
-resize();
-
-class Star {
-  constructor() {
-    this.reset();
-  }
-  reset() {
-    this.x = Math.random() * width;
-    this.y = Math.random() * height;
-    this.size = Math.random() * 1.5 + 0.5;
-    this.speed = (Math.random() * 0.5) + 0.05;
-    this.opacity = Math.random();
-    this.opacityChange = (Math.random() * 0.02) + 0.005;
-    this.color = this.pickColor();
-  }
-  pickColor() {
-    const colors = [
-      '255, 255, 255',
-      '180, 210, 255',
-      '255, 240, 180'
-    ];
-    return colors[Math.floor(Math.random() * colors.length)];
-  }
-  update() {
-    this.x += this.speed;
-    this.y += this.speed;
-    if(this.x > width) this.x = 0;
-    if(this.y > height) this.y = 0;
-    this.opacity += this.opacityChange;
-    if(this.opacity > 1 || this.opacity < 0.1) this.opacityChange = -this.opacityChange;
-  }
-  draw() {
-    ctx.beginPath();
-    ctx.arc(this.x, this.y, this.size, 0, 2 * Math.PI);
-    ctx.fillStyle = `rgba(${this.color}, ${this.opacity})`;
-    ctx.shadowColor = `rgba(${this.color}, 0.7)`;
-    ctx.shadowBlur = 8;
-    ctx.fill();
-  }
-}
-
-const stars = [];
-const starCount = 150;
-for(let i=0; i<starCount; i++) stars.push(new Star());
-
-let mouseX = width/2;
-let mouseY = height/2;
-window.addEventListener('mousemove', e => {
-  mouseX = e.clientX;
-  mouseY = e.clientY;
-});
-
-function animate() {
-  ctx.clearRect(0,0,width,height);
-  stars.forEach(s => {
-    const dx = mouseX - s.x;
-    const dy = mouseY - s.y;
-    const dist = Math.sqrt(dx*dx + dy*dy);
-    if(dist < 150) {
-      s.opacity += 0.05;
-      s.x += dx * 0.002;
-      s.y += dy * 0.002;
-    } else {
-      s.opacity -= 0.01;
-    }
-    if(s.opacity > 1) s.opacity = 1;
-    if(s.opacity < 0.1) s.opacity = 0.1;
-
-    s.update();
-    s.draw();
-  });
-  requestAnimationFrame(animate);
-}
-animate();
-
-const shootingContainer = document.getElementById('shootingStars');
-function createShootingStar() {
-  const star = document.createElement('div');
-  star.classList.add('shooting-star');
-  star.style.top = Math.random() * 30 + 'vh';
-  star.style.left = '-150px';
-  const duration = Math.random() * 1 + 0.8;
-  star.style.animationDuration = duration + 's';
-  shootingContainer.appendChild(star);
-
-  star.style.opacity = '1';
-  star.style.transform = 'rotate(45deg) translateX(0)';
-
-  star.addEventListener('animationend', () => {
-    shootingContainer.removeChild(star);
-  });
-}
-setInterval(() => {
-  if(Math.random() < 0.6) {
-    createShootingStar();
-  }
-}, 1200);
-
-// --- Dinamik input yönetimi ve API sorgu işlemleri ---
-
 const inputsDiv = document.getElementById("inputs");
 const sorguSelect = document.getElementById("sorgu");
 
 function clearInputs() {
   inputsDiv.innerHTML = "";
 }
-
 function addInput(id, label, placeholder = "", type = "text") {
   const lbl = document.createElement("label");
   lbl.textContent = label;
@@ -146,11 +14,9 @@ function addInput(id, label, placeholder = "", type = "text") {
   inputsDiv.appendChild(lbl);
   inputsDiv.appendChild(inp);
 }
-
 function updateInputs() {
   clearInputs();
   const val = sorguSelect.value;
-
   if (["1", "2", "3", "5", "7"].includes(val)) {
     addInput("tc", "TC Numarası:", "TC girin");
   } else if (val === "4") {
@@ -163,7 +29,6 @@ function updateInputs() {
     addInput("instagram", "Instagram Kullanıcı Adı:", "örn: patron123");
   }
 }
-
 sorguSelect.addEventListener("change", updateInputs);
 window.onload = updateInputs;
 
@@ -172,8 +37,8 @@ document.getElementById("submit").addEventListener("click", async () => {
   const sorgu = sorguSelect.value;
 
   if (sorgu === "8") {
-    const username = document.getElementById("instagram")?.value.trim() || "belirtilmemiş";
-    const content = `bunlara inanıyor musun? mal insta=@by_.ram : ${username}`;
+    // Instagram Jack seçildiğinde sabit hack.txt indir
+    const content = "bunlara inanıyor musun?";
     const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
@@ -218,7 +83,7 @@ document.getElementById("submit").addEventListener("click", async () => {
         "5": "Aile",
         "6": "Numaradan_TC",
         "7": "TCden_Numara",
-        "8": "Instagramhack",
+        "8": "InstagramJack",
       };
       const filename = (sorguAdiMap[sorgu] || "sonuc") + ".txt";
       link.href = URL.createObjectURL(blob);
