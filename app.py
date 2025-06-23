@@ -34,7 +34,7 @@ def sorgu():
     soyad = data.get("soyad", "")
     il = data.get("il", "")
 
-    base_url = "http://ramowlf.xyz/ramowlf" if api == "1" else "https://api.hexnox.pro/sowixapi"
+    base_url = "http://api.ramowlf.site" if api == "1" else "https://api.hexnox.pro/sowixapi"
 
     if sorgu == "1":
         url = f"{base_url}/sulale.php?tc={tc}"
