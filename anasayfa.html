@@ -567,4 +567,98 @@
                     }
 
                     /*
-                    // --- 
+                    // ---  // ---                 // --- MOCK API RESPONSE (for demonstration) ---
+                    await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate network delay
+                    const mockData = {
+                        success: true,
+                        result: `--- SORGULAMA BAŞARILI ---\n\nSorgu Tipi: ${sorguSelect.options[sorguSelect.selectedIndex].text}\n\nİstenen Veriler:\n${JSON.stringify(data, null, 2)}\n\n--- SONUÇ ---\nBu alana API'den gelen gerçek veri basılacaktır.\nÖrnek Sonuç 1\nÖrnek Sonuç 2\nÖrnek Sonuç 3\n...\n\nSorgu Tarihi: ${new Date().toLocaleString('tr-TR')}`
+                    };
+                    const json = mockData;
+                    // --- END MOCK API RESPONSE ---
+                    */
+
+                    // --- ACTUAL FETCH CALL ---
+                    const res = await fetch("/api/sorgu", { // Flask uygulamanızın API yolunu burada kullanıyoruz
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(data),
+                    });
+
+                    if (!res.ok) {
+                        // Sunucu bir hata kodu (örneğin 400, 500) döndürdüğünde
+                        let errorMessage = `Sunucu Hatası: ${res.status}`;
+                        try {
+                            const errorJson = await res.json();
+                            if (errorJson.message) {
+                                errorMessage += ` - ${errorJson.message}`;
+                            }
+                        } catch (parseError) {
+                            // JSON parse edilemezse, ham metni kullan
+                            errorMessage += ` - ${await res.text()}`;
+                        }
+                        throw new Error(errorMessage);
+                    }
+
+                    const json = await res.json();
+                    // --- END ACTUAL FETCH CALL ---
+
+                    if (json.success) {
+                        lastResult = json.result;
+                        resultsOutput.textContent = lastResult;
+                        resultsOutput.classList.remove('placeholder');
+                        showNotification("Sorgu başarıyla tamamlandı.", "success");
+                    } else {
+                        lastResult = `Sorgu hatası: ${json.message || "Bilinmeyen bir hata oluştu."}`;
+                        resultsOutput.textContent = lastResult;
+                        showNotification(lastResult, "error");
+                    }
+                } catch (err) {
+                    lastResult = `İstemci tarafı veya ağ hatası: ${err.message}`;
+                    resultsOutput.textContent = lastResult;
+                    showNotification(lastResult, "error");
+                } finally {
+                    submitButton.disabled = false;
+                    loader.style.display = 'none';
+                    buttonText.style.display = 'block';
+                }
+            }
+
+            // --- Event Listeners ---
+            sorguSelect.addEventListener("change", updateInputs);
+            submitButton.addEventListener("click", handleSorgu);
+
+            copyButton.addEventListener("click", () => {
+                if (!lastResult || resultsOutput.classList.contains('placeholder')) {
+                    showNotification("Kopyalanacak bir sonuç yok.", "error");
+                    return;
+                }
+                navigator.clipboard.writeText(lastResult)
+                    .then(() => showNotification("Sonuç panoya kopyalandı!", "success"))
+                    .catch(() => showNotification("Kopyalama başarısız oldu.", "error"));
+            });
+
+            downloadButton.addEventListener("click", () => {
+                if (!lastResult || resultsOutput.classList.contains('placeholder')) {
+                    showNotification("İndirilecek bir sonuç yok.", "error");
+                    return;
+                }
+                const blob = new Blob([lastResult], { type: "text/plain;charset=utf-8" });
+                const link = document.createElement("a");
+                const sorguAdiMap = {
+                    "1": "Sulale", "2": "TC_Bilgi", "3": "Adres", "4": "AdSoyadIl",
+                    "5": "Aile", "6": "Numaradan_TC", "7": "TCden_Numara",
+                };
+                link.href = URL.createObjectURL(blob);
+                link.download = `${sorguAdiMap[lastSorguType] || "sonuc"}.txt`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                showNotification("Sonuç dosyası indiriliyor...", "success");
+            });
+
+            // --- Initial State ---
+            updateInputs();
+        });
+    </script>
+</body>
+</html>
