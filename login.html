@@ -1,140 +1,149 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bu Web Sitesi Kapatılmıştır</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap');
-
-        body {
-            background-color: #000000; /* Tam siyah arka plan */
-            color: #cccccc; /* Genel metin rengi (hafif kırık beyaz) */
-            font-family: 'Roboto', sans-serif; /* Modern ve okunabilir bir font */
-            margin: 0;
-            padding: 40px 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            text-align: center;
-        }
-
-        .container {
-            max-width: 800px;
-        }
-
-        .pre-header {
-            font-size: 1.2em;
-            letter-spacing: 2px;
-            color: #ffffff;
-            margin-bottom: 15px;
-        }
-
-        h1 {
-            font-size: 2.8em; /* Ana başlık boyutu */
-            font-weight: 900; /* Daha kalın bir font */
-            text-transform: uppercase; /* BÜYÜK HARF */
-            color: #00eaf0; /* Parlak camgöbeği rengi */
-            margin: 0;
-            padding: 0;
-            /* Parlama efekti için text-shadow kullanılır */
-            text-shadow: 0 0 5px rgba(0, 234, 240, 0.7),
-                         0 0 10px rgba(0, 234, 240, 0.5),
-                         0 0 20px rgba(0, 234, 240, 0.3);
-        }
-        
-        .sub-header {
-            font-size: 1.2em;
-            letter-spacing: 2px;
-            color: #ffffff;
-            margin-top: 15px;
-            margin-bottom: 40px;
-        }
-
-        p {
-            font-size: 1em;
-            line-height: 1.8;
-            max-width: 700px;
-            margin: 25px auto; /* Paragraflar arası boşluk ve ortalama */
-        }
-        
-        p i {
-            color: #ffffff; /* Kanun metni için daha parlak beyaz */
-        }
-
-        .logos-container {
-            margin-top: 60px;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start; /* Logoları ve metinleri üstten hizala */
-            gap: 80px; /* Logo grupları arası boşluk */
-            flex-wrap: wrap; /* Küçük ekranlarda alt alta gelmesi için */
-        }
-
-        .logo-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            max-width: 200px;
-        }
-
-        .logo-item img {
-            height: 80px; /* Logo yüksekliği */
-            margin-bottom: 15px;
-        }
-
-        .logo-item .caption {
-            font-size: 0.8em;
-            color: #ffffff;
-            font-weight: bold;
-            line-height: 1.4;
-        }
-        
-        .logo-item .caption-sub {
-            font-size: 0.8em;
-            color: #cccccc;
-        }
-
-    </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Giriş - PATRON</title>
+<style>
+  body {
+    background: #000;
+    color: #c0f7ff;
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+  }
+  .login-wrapper {
+    background: #000000cc;
+    padding: 2em;
+    border-radius: 12px;
+    box-shadow: 0 0 20px #00eaffaa;
+    width: 320px;
+  }
+  h2 {
+    margin-bottom: 1em;
+    color: #00eaff;
+    text-align: center;
+  }
+  form {
+    display: flex;
+    flex-direction: column;
+  }
+  input {
+    background: #122638;
+    border: none;
+    border-radius: 8px;
+    color: #d4f1ff;
+    padding: 12px;
+    margin-bottom: 1em;
+    font-size: 16px;
+    outline: none;
+  }
+  input:focus {
+    box-shadow: 0 0 10px #00eaffcc;
+  }
+  button {
+    background: #0a1a2a;
+    color: #00eaff;
+    font-weight: bold;
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    box-shadow: 0 0 15px #00eaff99;
+  }
+  button:hover {
+    background: #00eaff11;
+    color: #002f4b;
+    box-shadow: 0 0 30px #00eaffcc;
+  }
+  .error {
+    color: #ff5555;
+    font-weight: 600;
+    text-align: center;
+    display: none;
+    margin-top: 0.5em;
+  }
+</style>
 </head>
 <body>
-
-    <div class="container">
+  <div class="login-wrapper">
+    <h2>Giriş Paneli</h2>
+    <form action="/login" method="POST" autocomplete="off" id="loginForm">
+      <input type="text" name="username" placeholder="Kullanıcı Adı" required />
+      <input type="password" name="password" placeholder="Şifre" required />
+      <button type="submit">Giriş Yap</button>
+      <p class="error" id="errorMsg">Geçersiz kullanıcı adı veya şifre.</p>
+    </form>
+  </div>
+  <script>
+    // Basit client-side hata mesajı gösterme (backend yanıtına göre ayarlanabilir)
+    const form = document.getElementById('loginForm');
+    const errorMsg = document.getElementById('errorMsg');
     
-        <div class="pre-header">BU WEB SİTESİ</div>
-        <h1>ULUSAL SİBER OLAYLARA MÜDAHALE MERKEZİ (USOM)</h1>
-        <div class="sub-header">TARAFINDAN KAPATILMIŞTIR</div>
+    form.addEventListener('submit', (e) => {
+      // Burada istersen Ajax ile gönderip hata yakalayabilirsin,
+      // ama Flask backend ile klasik form POST kullanıyorsan
+      // bu script'i kaldırabilirsin veya backend yönlendirmelerini kullan.
+      errorMsg.style.display = 'none';
+    });
+  </script>
+</body>
+</html>ername" />
+    <input type="password" id="password" placeholder="Şifre" required autocomplete="current-password" />
+    <button type="submit" class="glow-button">Giriş Yap</button>
+    <p id="errorMsg" class="error">Kullanıcı adı veya şifre yanlış!</p>
+  </form>
+</div>
 
-        <p>
-            Ulusal Siber Olaylara Müdahale Merkezi (USOM); ülke kapsamında, yurtiçi ve yurtdışı kaynaklı siber tehditleri tespit etme ve önleme faaliyetleri yürütmektedir.
-        </p>
+<script>
+  const form = document.getElementById("loginForm");
+  const errorMsg = document.getElementById("errorMsg");
 
-        <p>
-            5809 sayılı Elektronik Haberleşme Kanununun, 60 ıncı maddesi 11 inci fıkrasında Bilgi Teknolojileri ve İletişim Kurumu'nun yetkilerine ilişkin olarak şu hükümler yer almaktadır:
-        </p>
+  const users = [
+    { user: "admin", pass: "patronsorgu" },
+    { user: "kaneki", pass: "ghoul123" }
+  ];
 
-        <p>
-            <i>"(11) 'Kurum, kamu kurum ve kuruluşları ile gerçek ve tüzel kişilerin siber saldırılara karşı korunması ve bu saldırılara karşı caydırıcılık sağlamak için her türlü tedbiri alır ve/veya aldırır.'"</i>
-        </p>
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    errorMsg.style.display = "none";
 
-        <p>
-            Bu web sitesi Ulusal Siber Olaylara Müdahale Merkezi (USOM) tarafından yürütülen önleyici faaliyetler kapsamında devre dışı bırakılmıştır.
-        </p>
+    const username = form.username.value.trim().toLowerCase();
+    const password = form.password.value.trim();
 
-        <div class="logos-container">
-            <div class="logo-item">
-                <img src="usom.png" alt="USOM Logosu">
-                <div class="caption">ULUSAL SİBER OLAYLARA MÜDAHALE MERKEZİ</div>
-                <div class="caption-sub">USOM</div>
-            </div>
-            <div class="logo-item">
-                <img src="btk.png" alt="BTK Logosu">
-                <div class="caption">BİLGİ TEKNOLOJİLERİ VE İLETİŞİM KURUMU</div>
-            </div>
-        </div>
+    const match = users.find(u => u.user === username && u.pass === password);
 
+    if (match) {
+      // Giriş başarılı - gerçek projede burada sunucuya istek yapılmalı
+      window.location.href = "/anasayfa"; 
+    } else {
+      errorMsg.style.display = "block";
+      errorMsg.style.animation = "none";
+      errorMsg.offsetHeight; // restart animation
+      errorMsg.style.animation = null;
+      form.password.focus();
+    }
+  });
+</script>
+
+</body>
+</html>    {% endwith %}
+        </form>
     </div>
 
+    <script>
+        const form = document.getElementById('loginForm');
+        const errorMsg = document.querySelector('.error');
+        
+        if (errorMsg) {
+            // Hata mesajını 5 saniye sonra gizle
+            setTimeout(() => {
+                errorMsg.classList.add('hidden');
+            }, 5000);
+        }
+    </script>
 </body>
 </html>
