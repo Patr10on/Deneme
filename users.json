@@ -1,0 +1,20 @@
+{
+    "admin": {
+        "password": "1234",
+        "banned": false,
+        "ip": "127.0.0.1",
+        "device": "Linux-4.19.321-ge01b96d7bb93-aarch64-with-libc"
+    },
+    "Enes": {
+        "password": "Batur",
+        "banned": false,
+        "ip": "127.0.0.1",
+        "device": "Linux-4.19.321-ge01b96d7bb93-aarch64-with-libc"
+    },
+    "Deneme": {
+        "password": "123",
+        "banned": false,
+        "ip": "127.0.0.1",
+        "device": "Linux-4.19.321-ge01b96d7bb93-aarch64-with-libc"
+    }
+}

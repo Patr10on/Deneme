@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yönetici Paneli | Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --success-color: #4cc9f0;
+            --danger-color: #f72585;
+            --dark-color: #212529;
+            --light-color: #f8f9fa;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            overflow-x: hidden;
+        }
+        
+        /* Main Content Styles */
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 15px 25px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        
+        .page-title h2 {
+            font-weight: 600;
+            margin-bottom: 0;
+            color: var(--dark-color);
+        }
+        
+        .user-actions {
+            display: flex;
+            align-items: center;
+        }
+        
+        .search-box {
+            position: relative;
+            margin-right: 20px;
+        }
+        
+        .search-box input {
+            padding: 8px 15px 8px 40px;
+            border: 1px solid #ddd;
+            border-radius: 30px;
+            width: 250px;
+            transition: all 0.3s;
+        }
+        
+        .search-box input:focus {
+            width: 300px;
+            outline: none;
+            border-color: var(--primary-color);
+        }
+        
+        .search-box i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #777;
+        }
+        
+        .user-profile {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+        
+        .user-profile img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+            object-fit: cover;
+        }
+        
+        .user-profile .user-name {
+            font-weight: 500;
+            margin-right: 5px;
+        }
+        
+        /* Card Styles */
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+            transition: all 0.3s;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        .card-header {
+            background: white;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            padding: 15px 25px;
+            border-radius: 10px 10px 0 0 !important;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .card-header h5 {
+            font-weight: 600;
+            margin-bottom: 0;
+        }
+        
+        /* Table Styles */
+        .table-responsive {
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .table {
+            margin-bottom: 0;
+        }
+        
+        .table thead th {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            font-weight: 500;
+        }
+        
+        .table tbody tr {
+            transition: all 0.3s;
+        }
+        
+        .table tbody tr:hover {
+            background-color: rgba(67, 97, 238, 0.05);
+        }
+        
+        .table tbody td {
+            padding: 15px 20px;
+            vertical-align: middle;
+            border-top: 1px solid rgba(0,0,0,0.03);
+        }
+        
+        /* Status Badge */
+        .badge {
+            padding: 6px 12px;
+            font-weight: 500;
+            font-size: 0.8rem;
+            border-radius: 50px;
+        }
+        
+        .badge-success {
+            background-color: rgba(40, 167, 69, 0.1);
+            color: #28a745;
+        }
+        
+        .badge-danger {
+            background-color: rgba(220, 53, 69, 0.1);
+            color: #dc3545;
+        }
+        
+        /* Buttons */
+        .btn {
+            padding: 8px 15px;
+            border-radius: 6px;
+            font-weight: 500;
+            font-size: 0.85rem;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .btn i {
+            margin-right: 5px;
+        }
+        
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 0.8rem;
+        }
+        
+        /* Form Styles */
+        .form-control {
+            padding: 10px 15px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            transition: all 0.3s;
+        }
+        
+        .form-control:focus {
+            box-shadow: none;
+            border-color: var(--primary-color);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .user-actions {
+                width: 100%;
+                justify-content: space-between;
+                margin-top: 15px;
+            }
+            
+            .search-box {
+                margin-right: 0;
+                width: 100%;
+            }
+            
+            .search-box input {
+                width: 100%;
+            }
+            
+            .search-box input:focus {
+                width: 100%;
+            }
+        }
+        
+        /* Animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease forwards;
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 10px;
+        }
+        
+        /* Loading Spinner */
+        .spinner-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(67, 97, 238, 0.1);
+            border-radius: 50%;
+            border-top-color: var(--primary-color);
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <div class="header fade-in">
+            <div class="d-flex align-items-center">
+                <div class="page-title">
+                    <h2><i class="fas fa-users me-2"></i> Kullanicilar </h2>
+                </div>
+            </div>
+            
+            <div class="user-actions">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Kullanici ara...">
+                </div>
+                
+                <div class="dropdown">
+                    <div class="user-profile dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                        <img src="https://via.placeholder.com/40" alt="User">
+                        <span class="user-name">Admin</span>
+                        <i class="fas fa-chevron-down ms-1"></i>
+                    </div>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-user me-2"></i> Profil</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i> Ayarlar</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="/logout"><i class="fas fa-sign-out-alt me-2"></i> Çk Yap</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add User Card -->
+        <div class="card fade-in">
+            <div class="card-header">
+                <h5><i class="fas fa-user-plus me-2"></i> Yeni Kullanici Ekle</h5>
+            </div>
+            <div class="card-body">
+                <form id="addUserForm" class="row g-3">
+                    <div class="col-md-4">
+                        <label for="newUsername" class="form-label">Kullanici Ad</label>
+                        <input type="text" class="form-control" id="newUsername" placeholder="Kullanici ad girin" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="newPassword" class="form-label">sifre</label>
+                        <input type="password" class="form-control" id="newPassword" placeholder="sifre girin" required>
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-plus me-1"></i> Kullanici Ekle
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Users Table Card -->
+        <div class="card fade-in">
+            <div class="card-header">
+                <h5><i class="fas fa-users me-2"></i> Kullanici Listesi</h5>
+                <div class="d-flex align-items-center">
+                    <span class="me-3">Toplam: <strong id="totalUsers">0</strong></span>
+                    <button class="btn btn-sm btn-outline-secondary" id="refreshBtn">
+                        <i class="fas fa-sync-alt me-1"></i> Yenile
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Kullanc Ad</th>
+                                <th>IP Adresi</th>
+                                <th>Cihaz Bilgisi</th>
+                                <th>Durum</th>
+                                <th>Son Aktivite</th>
+                                <th>islemler</th>
+                            </tr>
+                        </thead>
+                        <tbody id="userTableBody">
+                            <tr>
+                                <td colspan="6" class="text-center py-4">
+                                    <div class="spinner-container">
+                                        <div class="spinner"></div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Pagination -->
+                <nav aria-label="Page navigation" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item disabled">
+                            <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Onceki</a>
+                        </li>
+                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                        <li class="page-item"><a class="page-link" href="#">2</a></li>
+                        <li class="page-item"><a class="page-link" href="#">3</a></li>
+                        <li class="page-item">
+                            <a class="page-link" href="#">Sonraki</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load users initially
+            loadUsers();
+
+            // Refresh button
+            document.getElementById('refreshBtn').addEventListener('click', loadUsers);
+
+            // Search functionality
+            document.getElementById('searchInput').addEventListener('input', filterUsers);
+
+            // Add user form
+            document.getElementById('addUserForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const username = document.getElementById('newUsername').value.trim();
+                const password = document.getElementById('newPassword').value.trim();
+                
+                if (!username || !password) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Hata!',
+                        text: 'Kullanc ad ve ifre alanlar bo braklamaz!',
+                        confirmButtonColor: '#4361ee'
+                    });
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/api/add_user', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username, password })
+                    });
+
+                    if (response.ok) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Baarl!',
+                            text: 'Kullanici basaryla eklendi.',
+                            confirmButtonColor: '#4361ee',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                        
+                        document.getElementById('addUserForm').reset();
+                        loadUsers();
+                    } else {
+                        const error = await response.json();
+                        throw new Error(error.message || 'Kullanici eklenirken bir hata olutu.');
+                    }
+                } catch (error) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Hata!',
+                        text: error.message,
+                        confirmButtonColor: '#4361ee'
+                    });
+                }
+            });
+        });
+
+        async function loadUsers() {
+            try {
+                document.getElementById('userTableBody').innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center py-4">
+                            <div class="spinner-container">
+                                <div class="spinner"></div>
+                            </div>
+                        </td>
+                    </tr>`;
+                
+                const response = await fetch('/api/users');
+                
+                if (!response.ok) {
+                    throw new Error('Kullanclar yüklenirken bir hata olutu.');
+                }
+                
+                const users = await response.json();
+                renderUsers(users);
+            } catch (error) {
+                document.getElementById('userTableBody').innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center text-danger py-4">
+                            <i class="fas fa-exclamation-triangle me-2"></i>${error.message}
+                        </td>
+                    </tr>`;
+            }
+        }
+
+        function renderUsers(users) {
+            const tbody = document.getElementById('userTableBody');
+            tbody.innerHTML = '';
+            
+            if (!users || Object.keys(users).length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center py-4">
+                            <i class="fas fa-info-circle me-2"></i>Kaytl kullanc bulunamad.
+                        </td>
+                    </tr>`;
+                document.getElementById('totalUsers').textContent = '0';
+                return;
+            }
+            
+            document.getElementById('totalUsers').textContent = Object.keys(users).length;
+            
+            for (const [username, data] of Object.entries(users)) {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div class="avatar me-2">
+                                <i class="fas fa-user-circle" style="font-size: 1.5rem; color: #6c757d;"></i>
+                            </div>
+                            <div>
+                                <strong>${username}</strong>
+                                ${username === 'admin' ? '<span class="badge bg-primary ms-2">Admin</span>' : ''}
+                            </div>
+                        </div>
+                    </td>
+                    <td>${data.ip || '-'}</td>
+                    <td>${data.device || '-'}</td>
+                    <td>
+                        <span class="badge ${data.banned ? 'badge-danger' : 'badge-success'}">
+                            <i class="fas ${data.banned ? 'fa-ban' : 'fa-check'} me-1"></i>
+                            ${data.banned ? 'Banl' : 'Aktif'}
+                        </span>
+                    </td>
+                    <td>${data.last_activity || 'Bilinmiyor'}</td>
+                    <td>
+                        <div class="d-flex gap-2">
+                            ${username !== 'admin' ? `
+                                <button class="btn btn-sm ${data.banned ? 'btn-success' : 'btn-danger'}" 
+                                        onclick="toggleBan('${username}', ${data.banned})">
+                                    <i class="fas ${data.banned ? 'fa-unlock' : 'fa-ban'} me-1"></i>
+                                    ${data.banned ? 'Ban Kaldr' : 'Banla'}
+                                </button>
+                                <button class="btn btn-sm btn-outline-primary" onclick="editUser('${username}')">
+                                    <i class="fas fa-edit me-1"></i> Düzenle
+                                </button>
+                            ` : `
+                                <button class="btn btn-sm btn-outline-secondary" disabled>
+                                    <i class="fas fa-lock me-1"></i> Admin
+                                </button>
+                            `}
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            }
+        }
+
+        function filterUsers() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const rows = document.querySelectorAll('#userTableBody tr');
+            
+            rows.forEach(row => {
+                const username = row.querySelector('td:first-child strong')?.textContent.toLowerCase() || '';
+                row.style.display = username.includes(searchTerm) ? '' : 'none';
+            });
+        }
+
+        async function toggleBan(username, isBanned) {
+            try {
+                const result = await Swal.fire({
+                    title: 'Emin misiniz?',
+                    html: `<strong>${username}</strong> kullancsn ${isBanned ? 'bann kaldrmak' : 'banlamak'} istiyor musunuz?`,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: isBanned ? '#28a745' : '#dc3545',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: isBanned ? 'Ban Kaldr' : 'Banla',
+                    cancelButtonText: 'ptal',
+                    reverseButtons: true
+                });
+
+                if (result.isConfirmed) {
+                    const endpoint = isBanned ? '/api/unban_user' : '/api/ban_user';
+                    const response = await fetch(endpoint, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('lem srasnda bir hata olutu.');
+                    }
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Baarl!',
+                        text: `Kullanc ${isBanned ? 'ban kaldrld' : 'banland'}.`,
+                        confirmButtonColor: '#4361ee',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+
+                    loadUsers();
+                }
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Hata!',
+                    text: error.message,
+                    confirmButtonColor: '#4361ee'
+                });
+            }
+        }
+
+        function editUser(username) {
+            Swal.fire({
+                title: `${username} Kullancsn Düzenle`,
+                html: `
+                    <div class="text-start">
+                        <div class="mb-3">
+                            <label class="form-label">Yeni ifre</label>
+                            <input type="password" id="editPassword" class="form-control" placeholder="aifre girin">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">ifreyi Onayla</label>
+                            <input type="password" id="editConfirmPassword" class="form-control" placeholder="sifreyi tekrar girin">
+                        </div>
+                    </div>
+                `,
+                icon: 'info',
+                showCancelButton: true,
+                confirmButtonColor: '#4361ee',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Güncelle',
+                cancelButtonText: 'ptal',
+                preConfirm: () => {
+                    const password = document.getElementById('editPassword').value;
+                    const confirmPassword = document.getElementById('editConfirmPassword').value;
+                    
+                    if (password && password !== confirmPassword) {
+                        Swal.showValidationMessage('ifreler uyumuyor!');
+                    }
+                    
+                    return { password };
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Burada API çars yaplabilir
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Baarl!',
+                        text: 'Kullanc bilgileri güncellendi.',
+                        confirmButtonColor: '#4361ee',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                }
+            });
+        }
+    </script>
+</body>
+</html>
