@@ -79,17 +79,21 @@
     </form>
   </div>
   <script>
-
+    // Basit client-side hata mesajı gösterme (backend yanıtına göre ayarlanabilir)
     const form = document.getElementById('loginForm');
     const errorMsg = document.getElementById('errorMsg');
     
     form.addEventListener('submit', (e) => {
-      /
+      // Burada istersen Ajax ile gönderip hata yakalayabilirsin,
+      // ama Flask backend ile klasik form POST kullanıyorsan
+      // bu script'i kaldırabilirsin veya backend yönlendirmelerini kullan.
       errorMsg.style.display = 'none';
     });
   </script>
 </body>
-</html>
+</html>ername" />
+    <input type="password" id="password" placeholder="Şifre" required autocomplete="current-password" />
+    <button type="submit" class="glow-button">Giriş Yap</button>
     <p id="errorMsg" class="error">Kullanıcı adı veya şifre yanlış!</p>
   </form>
 </div>
