@@ -1,25 +1,22 @@
-<h1 align="center">👋 Merhaba, Ben Patron /h1>
-
 <p align="center">
-  <img src="https://img.shields.io/badge/Code-Python-blue?style=for-the-badge&logo=python" />
-  <img src="https://img.shields.io/badge/Code-JavaScript-yellow?style=for-the-badge&logo=javascript" />
-  <img src="https://img.shields.io/badge/Tools-Docker-blue?style=for-the-badge&logo=docker" />
-  <img src="https://img.shields.io/badge/Cloud-AWS-orange?style=for-the-badge&logo=amazonaws" />
+  <img src="https://media.giphy.com/media/l41lVsYDBC0UVQJCE/giphy.gif" width="100%" alt="Matrix background"/>
 </p>
 
----
-
-## 🚀 Hakkımda
-- 💻 Backend and Frontend developer
-
-- 🎯 Şu an cyber security/web site development üzerine yoğunlaşıyorum  
-- ☕ HATA ile güçlenirim, kod ile ÖLÜR 
+<h1 align="center">
+  <img src="https://readme-typing-svg.herokuapp.com?font=Share+Tech+Mono&size=35&pause=800&color=00FF00&center=true&vCenter=true&width=600&lines=💀+PATRON+💀;System+Online...;Access+Granted..." alt="Typing SVG" />
+</h1>
 
 ---
 
-## 🛠️ Kullandığım diller vb
-```
-Diller: Python, JavaScript,  
-Framework: Flask, FastAPI, Node.js  
-Veritabanı: PostgreSQL, 
-Araçlar: , Git, Linux
+## 👾 Hakkımda
+```bash
+root@matrix:~$ whoami
+> PATRON
+
+root@matrix:~$ cat bio.json
+{
+  "role": "Hacker / Developer",
+  "skills": ["Python", "Cybersec", "Reverse Engineering"],
+  "status": "0xACTIVE",
+  "quote": "Trust me, I’m root 🐧"
+}
