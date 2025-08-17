@@ -1,4 +1,3 @@
-
 import requests
 from flask import Flask, request, jsonify, send_from_directory, session, redirect
 from flask_cors import CORS
@@ -10,13 +9,10 @@ from datetime import timedelta
 app = Flask(__name__)
 
 app.secret_key = "a1b2c3d4e5f60718293a4b5c6d7e8f90"
-
 app.permanent_session_lifetime = timedelta(hours=6)
 CORS(app)
 
-
 def kullanicilari_yukle():
-    
     if not os.path.exists("users.json"):
         with open("users.json", "w", encoding='utf-8') as f:
             json.dump({
@@ -26,22 +22,17 @@ def kullanicilari_yukle():
         return json.load(f)
 
 def kullanicilari_kaydet(users):
-    
     with open("users.json", "w", encoding='utf-8') as f:
         json.dump(users, f, indent=4, ensure_ascii=False)
 
 def cihaz_modeli():
-   
     return platform.platform()
 
 def ip_al():
-    
     return request.remote_addr
-
 
 @app.route("/")
 def login():
-    
     if "username" in session:
         if session["username"] == "admin":
             return redirect("/admin")
@@ -49,10 +40,8 @@ def login():
             return redirect("/anasayfa")
     return send_from_directory(".", "login.html")
 
-
 @app.route("/login", methods=["POST"])
 def login_post():
-    
     username = request.form.get("username")
     password = request.form.get("password")
     users = kullanicilari_yukle()
@@ -74,34 +63,26 @@ def login_post():
             
     return "Geçersiz kullanıcı adı veya şifre.", 401
 
-
 @app.route("/anasayfa")
 def anasayfa():
-    
     if "username" not in session:
         return redirect("/")
     return send_from_directory(".", "anasayfa.html")
 
-
 @app.route("/admin")
 def admin():
-    
     if session.get("username") != "admin":
         return redirect("/")
     return send_from_directory(".", "admin.html")
 
-
 @app.route("/api/users")
 def api_users():
-    
     if session.get("username") != "admin":
         return jsonify(error="Yetkiniz yok"), 403
     return jsonify(kullanicilari_yukle())
 
-
 @app.route("/api/add_user", methods=["POST"])
 def api_add_user():
-    
     if session.get("username") != "admin":
         return jsonify(error="Yetkiniz yok"), 403
     
@@ -124,10 +105,8 @@ def api_add_user():
     kullanicilari_kaydet(users)
     return jsonify(success=True, message="Kullanıcı başarıyla eklendi")
 
-
 @app.route("/api/ban_user", methods=["POST"])
 def api_ban_user():
-   
     if session.get("username") != "admin":
         return jsonify(error="Yetkiniz yok"), 403
     
@@ -140,10 +119,8 @@ def api_ban_user():
         return jsonify(success=True, message=f"{username} yasaklandı")
     return jsonify(error="Kullanıcı bulunamadı veya admin yasaklanamaz"), 404
 
-
 @app.route("/api/unban_user", methods=["POST"])
 def api_unban_user():
-   
     if session.get("username") != "admin":
         return jsonify(error="Yetkiniz yok"), 403
     
@@ -156,16 +133,12 @@ def api_unban_user():
         return jsonify(success=True, message=f"{username} yasağı kaldırıldı")
     return jsonify(error="Kullanıcı bulunamadı"), 404
 
-
 @app.route("/logout")
 def logout():
-    
     session.clear()
     return redirect("/")
 
-
 def filtrele_veri(metin):
-    
     if not isinstance(metin, str):
         return ""
     satirlar = metin.strip().splitlines()
@@ -179,12 +152,10 @@ def filtrele_veri(metin):
 
 @app.route("/api/sorgu", methods=["POST"])
 def sorgu():
-   
     data = request.json
     api = data.get("api")
     sorgu_tipi = data.get("sorgu")
 
-    
     tc = data.get("tc", "")
     gsm = data.get("gsm", "")
     ad = data.get("ad", "")
@@ -198,7 +169,6 @@ def sorgu():
     url = ""
     base_url = "https://wazelyapi.vercel.app/api" if api == "1" else "https://api.hexnox.pro/sowixapi"
 
-    # 
     if sorgu_tipi == "1":
         url = f"{base_url}/sulale.php?tc={tc}"
     elif sorgu_tipi == "2":
@@ -287,7 +257,7 @@ def sorgu():
 
     try:
         response = requests.get(url, timeout=30)
-        response.raise_for_status()  
+        response.raise_for_status()
         
         if response.text and response.text.strip():
             filtrelenmis = filtrele_veri(response.text)
@@ -301,83 +271,8 @@ def sorgu():
     except requests.exceptions.RequestException as e:
         return jsonify(success=False, message=f"API hatası: {str(e)}")
 
-
 @app.route("/<path:path>")
 def static_files(path):
-    
-    return send_from_directory(".", path)
-
-if __name__ == "__main__":
-    
-    app.run(host="0.0.0.0", port=5000, debug=True)
-
-u_tipi == "40":
-        url = f"{base_url}/isyeri.php?tc={tc}"
-    else:
-        return jsonify(success=False, message="Geçersiz sorgu tipi")
-
-    if not url:
-        return jsonify(success=False, message="URL oluşturulamadı.")
-
-    try:
-        response = requests.get(url, timeout=30)
-        response.raise_for_status()  # HTTP hata kodları için (4xx, 5xx) exception fırlatır
-        
-        if response.text and response.text.strip():
-            filtrelenmis = filtrele_veri(response.text)
-            if filtrelenmis:
-                return jsonify(success=True, result=filtrelenmis)
-            else:
-                return jsonify(success=False, message="Filtreleme sonrası geçerli veri bulunamadı.")
-        else:
-            return jsonify(success=False, message="API'den boş yanıt alındı.")
-            
-    except requests.exceptions.RequestException as e:
-        return jsonify(success=False, message=f"API hatası: {str(e)}")
-
-
-@app.route("/<path:path>")
-def static_files(path):
-    """Statik dosyaları (HTML, CSS, JS) sunar."""
-    return send_from_directory(".", path)
-
-if __name__ == "__main__":
-    # debug=True modunu production (canlı) ortamında kullanmayın.
-    app.run(host="0.0.0.0", port=5000, debug=True)
-
-sage": "Invalid query type"}), 400
-
-         Make the request
-        url = endpoint_map[sorgu_type]
-        response = requests.get(url, headers=headers, timeout=30, verify=False)
-        
-        # Handle response
-        if response.status_code != 200:
-            return jsonify({
-                "success": False,
-                "message": f"API returned status {response.status_code}",
-                "status": response.status_code
-            }), 502
-
-        # Try to parse JSON, fallback to text
-        try:
-            response_data = response.json()
-        except ValueError:
-            response_data = response.text
-
-        # Filter and return data
-        filtered = filter_data(response_data)
-        return jsonify({"success": True, "result": filtered})
-
-    except requests.RequestException as e:
-        return jsonify({"success": False, "message": f"API connection error: {str(e)}"}), 503
-    except Exception as e:
-        return jsonify({"success": False, "message": f"Server error: {str(e)}"}), 500
-
-# Static Files
-@app.route("/<path:path>")
-def static_files(path):
-    """Serve static files"""
     return send_from_directory(".", path)
 
 if __name__ == "__main__":
