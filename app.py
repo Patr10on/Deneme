@@ -7,7 +7,6 @@ import platform
 from datetime import timedelta
 
 app = Flask(__name__)
-
 app.secret_key = "a1b2c3d4e5f60718293a4b5c6d7e8f90"
 app.permanent_session_lifetime = timedelta(hours=6)
 CORS(app)
@@ -155,6 +154,7 @@ def sorgu():
     data = request.json
     api = data.get("api")
     sorgu_tipi = data.get("sorgu")
+    headers = data.get("headers", {})  # <-- Headerler buradan alınacak
 
     tc = data.get("tc", "")
     gsm = data.get("gsm", "")
@@ -250,30 +250,18 @@ def sorgu():
     elif sorgu_tipi == "40":
         url = f"{base_url}/isyeri.php?tc={tc}"
     else:
-        return jsonify(success=False, message="Geçersiz sorgu tipi")
-
-    if not url:
-        return jsonify(success=False, message="URL oluşturulamadı.")
+        return jsonify(success=False, message="Geçersiz sorgu tipi"), 400
 
     try:
-        response = requests.get(url, timeout=90)
+        response = requests.get(url, headers=headers, timeout=90)
         response.raise_for_status()
-        
-        if response.text and response.text.strip():
-            filtrelenmis = filtrele_veri(response.text)
-            if filtrelenmis:
-                return jsonify(success=True, result=filtrelenmis)
-            else:
-                return jsonify(success=False, message="Filtreleme sonrası geçerli veri bulunamadı.")
+        filtrelenmis = filtrele_veri(response.text)
+        if filtrelenmis:
+            return jsonify(success=True, result=filtrelenmis)
         else:
-            return jsonify(success=False, message="API'den boş yanıt alındı.")
-            
+            return jsonify(success=False, message="Veri bulunamadı veya geçersiz")
     except requests.exceptions.RequestException as e:
-        return jsonify(success=False, message=f"API hatası: {str(e)}")
-
-@app.route("/<path:path>")
-def static_files(path):
-    return send_from_directory(".", path)
+        return jsonify(success=False, message=f"Hata: {str(e)}")
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
