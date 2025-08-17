@@ -256,7 +256,7 @@ def sorgu():
         return jsonify(success=False, message="URL oluşturulamadı.")
 
     try:
-        response = requests.get(url, timeout=30)
+        response = requests.get(url, timeout=90)
         response.raise_for_status()
         
         if response.text and response.text.strip():
