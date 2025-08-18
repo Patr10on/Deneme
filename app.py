@@ -154,7 +154,7 @@ def sorgu():
     data = request.json
     api = data.get("api")
     sorgu_tipi = data.get("sorgu")
-    headers = data.get("headers", {})  # <-- Headerler buradan alınacak
+    headers = data.get("headers", {})
 
     tc = data.get("tc", "")
     gsm = data.get("gsm", "")
@@ -249,11 +249,40 @@ def sorgu():
         url = f"{base_url}/isyeriyetkili.php?tc={tc}"
     elif sorgu_tipi == "40":
         url = f"{base_url}/isyeri.php?tc={tc}"
+    elif sorgu_tipi == "41":
+        # Kombine sorgu (1, 2, 3 ve 5)
+        try:
+            results = {}
+            
+            # Sorgu 1 (Sülale)
+            url1 = f"{base_url}/sulale.php?tc={tc}"
+            response1 = requests.get(url1, headers=headers, timeout=90)
+            results['sulale'] = filtrele_veri(response1.text) if response1.status_code == 200 else "Sorgu başarısız"
+            
+            # Sorgu 2 (TC)
+            url2 = f"{base_url}/tc.php?tc={tc}" if api == "1" else f"{base_url}/tcpro.php?tc={tc}"
+            response2 = requests.get(url2, headers=headers, timeout=90)
+            results['tc'] = filtrele_veri(response2.text) if response2.status_code == 200 else "Sorgu başarısız"
+            
+            # Sorgu 3 (Adres)
+            url3 = f"{base_url}/adres.php?tc={tc}"
+            response3 = requests.get(url3, headers=headers, timeout=90)
+            results['adres'] = filtrele_veri(response3.text) if response3.status_code == 200 else "Sorgu başarısız"
+            
+            # Sorgu 5 (Aile)
+            url5 = f"{base_url}/aile.php?tc={tc}"
+            response5 = requests.get(url5, headers=headers, timeout=90)
+            results['aile'] = filtrele_veri(response5.text) if response5.status_code == 200 else "Sorgu başarısız"
+            
+            return jsonify(success=True, results=results)
+            
+        except requests.exceptions.RequestException as e:
+            return jsonify(success=False, message=f"Hata: {str(e)}")
     else:
         return jsonify(success=False, message="Geçersiz sorgu tipi"), 400
 
     try:
-        response = requests.get(url, headers=headers, timeout=90)
+        response = requests.get(url, headers=headers, timeout=90, verify=False)
         response.raise_for_status()
         filtrelenmis = filtrele_veri(response.text)
         if filtrelenmis:
