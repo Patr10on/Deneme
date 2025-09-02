@@ -6,6 +6,39 @@ import json
 import platform
 from datetime import timedelta
 
+# -------------------------
+# ASCII kutu formatlama fonksiyonu
+# -------------------------
+def format_box(title, data: dict):
+    width = 40
+    top = "╔" + "═" * width + "╗"
+    bottom = "╚" + "═" * width + "╝"
+    separator = "╠" + "═" * width + "╣"
+    center_title = f"║ {title.center(width)} ║"
+
+    lines = [top, center_title, separator]
+
+    for k, v in data.items():
+        if k == "imza":
+            continue
+        text = f"{k.capitalize()}: {v}"
+        while len(text) > width:
+            part = text[:width]
+            lines.append(f"║ {part.ljust(width)} ║")
+            text = text[width:]
+        lines.append(f"║ {text.ljust(width)} ║")
+
+    lines.append(bottom)
+    lines.append(data.get("imza", ""))
+    return "\n".join(lines)
+
+# -------------------------
+# Örnek kullanım fonksiyonu
+# -------------------------
+def ascii_sonuc(title, data_dict):
+    data_dict["imza"] = "@by_.ram"
+    return format_box(title, data_dict)
+
 app = Flask(__name__)
 app.secret_key = "a1b2c3d4e5f60718293a4b5c6d7e8f90"
 app.permanent_session_lifetime = timedelta(hours=6)
@@ -48,7 +81,7 @@ def login_post():
     if username in users and users[username]["password"] == password:
         if users[username]["banned"]:
             return "Bu kullanıcı yasaklanmıştır.", 403
-        
+
         session.permanent = True
         session["username"] = username
         users[username]["ip"] = ip_al()
@@ -59,7 +92,7 @@ def login_post():
             return redirect("/admin")
         else:
             return redirect("/anasayfa")
-            
+
     return "Geçersiz kullanıcı adı veya şifre.", 401
 
 @app.route("/anasayfa")
@@ -84,7 +117,7 @@ def api_users():
 def api_add_user():
     if session.get("username") != "admin":
         return jsonify(error="Yetkiniz yok"), 403
-    
+
     data = request.json
     users = kullanicilari_yukle()
     username = data.get("username")
@@ -94,7 +127,7 @@ def api_add_user():
         return jsonify(error="Eksik bilgi"), 400
     if username in users:
         return jsonify(error="Kullanıcı zaten mevcut"), 400
-        
+
     users[username] = {
         "password": password,
         "banned": False,
@@ -108,7 +141,7 @@ def api_add_user():
 def api_ban_user():
     if session.get("username") != "admin":
         return jsonify(error="Yetkiniz yok"), 403
-    
+
     data = request.json
     username = data.get("username")
     users = kullanicilari_yukle()
@@ -122,7 +155,7 @@ def api_ban_user():
 def api_unban_user():
     if session.get("username") != "admin":
         return jsonify(error="Yetkiniz yok"), 403
-    
+
     data = request.json
     username = data.get("username")
     users = kullanicilari_yukle()
@@ -165,7 +198,7 @@ def sorgu():
     username = data.get("username", "")
     plaka = data.get("plaka", "")
     ilce = data.get("ilce", "")
-    
+
     url = ""
     base_url = "https://wazelyapi.vercel.app/api" if api == "1" else "https://api.hexnox.pro/sowixapi"
 
@@ -253,29 +286,33 @@ def sorgu():
         # Kombine sorgu (1, 2, 3 ve 5)
         try:
             results = {}
-            
+
             # Sorgu 1 (Sülale)
             url1 = f"{base_url}/sulale.php?tc={tc}"
             response1 = requests.get(url1, headers=headers, timeout=90)
-            results['sulale'] = filtrele_veri(response1.text) if response1.status_code == 200 else "Sorgu başarısız"
-            
+            data1 = {"Sulale": filtrele_veri(response1.text)} if response1.status_code == 200 else {"Sulale": "Sorgu başarısız"}
+            results['sulale'] = ascii_sonuc("Sülale Sorgusu", data1)
+
             # Sorgu 2 (TC)
             url2 = f"{base_url}/tc.php?tc={tc}" if api == "1" else f"{base_url}/tcpro.php?tc={tc}"
             response2 = requests.get(url2, headers=headers, timeout=90)
-            results['tc'] = filtrele_veri(response2.text) if response2.status_code == 200 else "Sorgu başarısız"
-            
+            data2 = {"TC": filtrele_veri(response2.text)} if response2.status_code == 200 else {"TC": "Sorgu başarısız"}
+            results['tc'] = ascii_sonuc("TC Sorgusu", data2)
+
             # Sorgu 3 (Adres)
             url3 = f"{base_url}/adres.php?tc={tc}"
             response3 = requests.get(url3, headers=headers, timeout=90)
-            results['adres'] = filtrele_veri(response3.text) if response3.status_code == 200 else "Sorgu başarısız"
-            
+            data3 = {"Adres": filtrele_veri(response3.text)} if response3.status_code == 200 else {"Adres": "Sorgu başarısız"}
+            results['adres'] = ascii_sonuc("Adres Sorgusu", data3)
+
             # Sorgu 5 (Aile)
             url5 = f"{base_url}/aile.php?tc={tc}"
             response5 = requests.get(url5, headers=headers, timeout=90)
-            results['aile'] = filtrele_veri(response5.text) if response5.status_code == 200 else "Sorgu başarısız"
-            
+            data5 = {"Aile": filtrele_veri(response5.text)} if response5.status_code == 200 else {"Aile": "Sorgu başarısız"}
+            results['aile'] = ascii_sonuc("Aile Sorgusu", data5)
+
             return jsonify(success=True, results=results)
-            
+
         except requests.exceptions.RequestException as e:
             return jsonify(success=False, message=f"Hata: {str(e)}")
     else:
@@ -285,8 +322,11 @@ def sorgu():
         response = requests.get(url, headers=headers, timeout=90, verify=False)
         response.raise_for_status()
         filtrelenmis = filtrele_veri(response.text)
+        
         if filtrelenmis:
-            return jsonify(success=True, result=filtrelenmis)
+            # Tek bir sonuç döndüren sorgular için formatlama
+            formatted_result = ascii_sonuc("Sorgu Sonucu", {"Sonuç": filtrelenmis})
+            return jsonify(success=True, result=formatted_result)
         else:
             return jsonify(success=False, message="Veri bulunamadı veya geçersiz")
     except requests.exceptions.RequestException as e:
