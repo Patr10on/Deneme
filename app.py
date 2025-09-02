@@ -132,22 +132,22 @@ def sorgu():
             
             # Sorgu 1 (Sülale)
             url1 = f"{base_url}/sulale.php?tc={tc}"
-            response1 = requests.get(url1, headers=headers, timeout=90)
+            response1 = requests.get(url1, headers=headers, timeout=90, verify=False)
             results['sulale'] = filtrele_veri(response1.text) if response1.status_code == 200 else "Sorgu başarısız"
             
             # Sorgu 2 (TC)
             url2 = f"{base_url}/tc.php?tc={tc}" if api == "1" else f"{base_url}/tcpro.php?tc={tc}"
-            response2 = requests.get(url2, headers=headers, timeout=90)
+            response2 = requests.get(url2, headers=headers, timeout=90, verify=False)
             results['tc'] = filtrele_veri(response2.text) if response2.status_code == 200 else "Sorgu başarısız"
             
             # Sorgu 3 (Adres)
             url3 = f"{base_url}/adres.php?tc={tc}"
-            response3 = requests.get(url3, headers=headers, timeout=90)
+            response3 = requests.get(url3, headers=headers, timeout=90, verify=False)
             results['adres'] = filtrele_veri(response3.text) if response3.status_code == 200 else "Sorgu başarısız"
             
             # Sorgu 5 (Aile)
             url5 = f"{base_url}/aile.php?tc={tc}"
-            response5 = requests.get(url5, headers=headers, timeout=90)
+            response5 = requests.get(url5, headers=headers, timeout=90, verify=False)
             results['aile'] = filtrele_veri(response5.text) if response5.status_code == 200 else "Sorgu başarısız"
             
             return jsonify(success=True, results=results)
