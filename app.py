@@ -1,63 +1,21 @@
 import requests
 from flask import Flask, jsonify, send_from_directory, request
 from flask_cors import CORS
-import json
-
-# -------------------------
-# ASCII kutu formatlama fonksiyonu
-# -------------------------
-def format_box(title, data: dict):
-    # En uzun anahtar ve değerin uzunluğunu bul
-    max_key_len = max(len(k) for k in data.keys()) if data else 0
-    max_value_len = max(len(v) for v in data.values()) if data else 0
-    
-    # Kutu genişliğini belirle
-    content_width = max_key_len + max_value_len + 3 # : ve boşluk için 3 karakter
-    title_width = len(title)
-    width = max(content_width, title_width) + 4
-    
-    top = f"╔{'═' * (width)}╗"
-    middle_title = f"║{title.center(width)}║"
-    separator = f"╠{'═' * (width)}╣"
-    bottom = f"╚{'═' * (width)}╝"
-    imza = "@by_.ram"
-
-    content_lines = []
-    for key, value in data.items():
-        line = f"{key.capitalize()}: {value}"
-        content_lines.append(f"║ {line.ljust(width-2)} ║")
-    
-    box = [top, middle_title, separator] + content_lines + [bottom, imza]
-    return "\n".join(box)
-
-# -------------------------
-# Basit veri filtreleme fonksiyonu
-# -------------------------
-def filtrele_veri(metin):
-    if not isinstance(metin, str):
-        return ""
-    
-    temiz_metin = metin.strip().replace('\n', ' ').replace('\r', '')
-    if "GEÇERSİZ" in temiz_metin.upper() or temiz_metin.startswith("http"):
-        return ""
-
-    # Veriyi anahtar-değer çiftlerine ayırma
-    data = {}
-    parts = temiz_metin.split(" ")
-    i = 0
-    while i < len(parts):
-        key = parts[i].replace(':', '')
-        if key and i + 1 < len(parts):
-            value = parts[i+1]
-            data[key] = value
-            i += 2
-        else:
-            i += 1
-            
-    return data
 
 app = Flask(__name__)
 CORS(app)
+
+def filtrele_veri(metin):
+    if not isinstance(metin, str):
+        return ""
+    satirlar = metin.strip().splitlines()
+    temiz = []
+    for s in satirlar:
+        s = s.strip()
+        if not s or "GEÇERSİZ" in s.upper() or s.startswith("http"):
+            continue
+        temiz.append(s)
+    return "\n".join(temiz)
 
 @app.route("/")
 def anasayfa():
@@ -83,7 +41,7 @@ def sorgu():
     username = data.get("username", "")
     plaka = data.get("plaka", "")
     ilce = data.get("ilce", "")
-
+    
     url = ""
     base_url = "https://wazelyapi.vercel.app/api" if api == "1" else "https://api.hexnox.pro/sowixapi"
 
@@ -168,36 +126,32 @@ def sorgu():
     elif sorgu_tipi == "40":
         url = f"{base_url}/isyeri.php?tc={tc}"
     elif sorgu_tipi == "41":
+        # Kombine sorgu (1, 2, 3 ve 5)
         try:
             results = {}
-
+            
+            # Sorgu 1 (Sülale)
             url1 = f"{base_url}/sulale.php?tc={tc}"
             response1 = requests.get(url1, headers=headers, timeout=90)
-            results['Sülale'] = filtrele_veri(response1.text) if response1.status_code == 200 else {"Hata": "Sorgu başarısız"}
-
+            results['sulale'] = filtrele_veri(response1.text) if response1.status_code == 200 else "Sorgu başarısız"
+            
+            # Sorgu 2 (TC)
             url2 = f"{base_url}/tc.php?tc={tc}" if api == "1" else f"{base_url}/tcpro.php?tc={tc}"
             response2 = requests.get(url2, headers=headers, timeout=90)
-            results['TC'] = filtrele_veri(response2.text) if response2.status_code == 200 else {"Hata": "Sorgu başarısız"}
-
+            results['tc'] = filtrele_veri(response2.text) if response2.status_code == 200 else "Sorgu başarısız"
+            
+            # Sorgu 3 (Adres)
             url3 = f"{base_url}/adres.php?tc={tc}"
             response3 = requests.get(url3, headers=headers, timeout=90)
-            results['Adres'] = filtrele_veri(response3.text) if response3.status_code == 200 else {"Hata": "Sorgu başarısız"}
-
+            results['adres'] = filtrele_veri(response3.text) if response3.status_code == 200 else "Sorgu başarısız"
+            
+            # Sorgu 5 (Aile)
             url5 = f"{base_url}/aile.php?tc={tc}"
             response5 = requests.get(url5, headers=headers, timeout=90)
-            results['Aile'] = filtrele_veri(response5.text) if response5.status_code == 200 else {"Hata": "Sorgu başarısız"}
-
-            # Her bir sonucu tek bir kutuda düzenlemek için
-            all_results = {}
-            for k, v in results.items():
-                if isinstance(v, dict):
-                    all_results.update(v)
-                else:
-                    all_results[k] = v
-                    
-            formatted_results = format_box("Kombine Sorgu Sonuçları", all_results)
-            return jsonify(success=True, result=formatted_results)
-
+            results['aile'] = filtrele_veri(response5.text) if response5.status_code == 200 else "Sorgu başarısız"
+            
+            return jsonify(success=True, results=results)
+            
         except requests.exceptions.RequestException as e:
             return jsonify(success=False, message=f"Hata: {str(e)}")
     else:
@@ -206,13 +160,9 @@ def sorgu():
     try:
         response = requests.get(url, headers=headers, timeout=90, verify=False)
         response.raise_for_status()
-        
-        # Filtrelenmiş metni anahtar-değer çiftlerine dönüştür
         filtrelenmis = filtrele_veri(response.text)
-        
         if filtrelenmis:
-            formatted_result = format_box("Sorgu Sonucu", filtrelenmis)
-            return jsonify(success=True, result=formatted_result)
+            return jsonify(success=True, result=filtrelenmis)
         else:
             return jsonify(success=False, message="Veri bulunamadı veya geçersiz")
     except requests.exceptions.RequestException as e:
