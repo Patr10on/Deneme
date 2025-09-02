@@ -1,186 +1,71 @@
 import requests
-from flask import Flask, request, jsonify, send_from_directory, session, redirect
+from flask import Flask, jsonify, send_from_directory, request
 from flask_cors import CORS
-import os
 import json
-import platform
-from datetime import timedelta
 
 # -------------------------
 # ASCII kutu formatlama fonksiyonu
 # -------------------------
 def format_box(title, data: dict):
-    width = 40
-    top = "╔" + "═" * width + "╗"
-    bottom = "╚" + "═" * width + "╝"
-    separator = "╠" + "═" * width + "╣"
-    center_title = f"║ {title.center(width)} ║"
+    # En uzun anahtar ve değerin uzunluğunu bul
+    max_key_len = max(len(k) for k in data.keys()) if data else 0
+    max_value_len = max(len(v) for v in data.values()) if data else 0
+    
+    # Kutu genişliğini belirle
+    content_width = max_key_len + max_value_len + 3 # : ve boşluk için 3 karakter
+    title_width = len(title)
+    width = max(content_width, title_width) + 4
+    
+    top = f"╔{'═' * (width)}╗"
+    middle_title = f"║{title.center(width)}║"
+    separator = f"╠{'═' * (width)}╣"
+    bottom = f"╚{'═' * (width)}╝"
+    imza = "@by_.ram"
 
-    lines = [top, center_title, separator]
-
-    for k, v in data.items():
-        if k == "imza":
-            continue
-        text = f"{k.capitalize()}: {v}"
-        while len(text) > width:
-            part = text[:width]
-            lines.append(f"║ {part.ljust(width)} ║")
-            text = text[width:]
-        lines.append(f"║ {text.ljust(width)} ║")
-
-    lines.append(bottom)
-    lines.append(data.get("imza", ""))
-    return "\n".join(lines)
+    content_lines = []
+    for key, value in data.items():
+        line = f"{key.capitalize()}: {value}"
+        content_lines.append(f"║ {line.ljust(width-2)} ║")
+    
+    box = [top, middle_title, separator] + content_lines + [bottom, imza]
+    return "\n".join(box)
 
 # -------------------------
-# Örnek kullanım fonksiyonu
+# Basit veri filtreleme fonksiyonu
 # -------------------------
-def ascii_sonuc(title, data_dict):
-    data_dict["imza"] = "@by_.ram"
-    return format_box(title, data_dict)
+def filtrele_veri(metin):
+    if not isinstance(metin, str):
+        return ""
+    
+    temiz_metin = metin.strip().replace('\n', ' ').replace('\r', '')
+    if "GEÇERSİZ" in temiz_metin.upper() or temiz_metin.startswith("http"):
+        return ""
+
+    # Veriyi anahtar-değer çiftlerine ayırma
+    data = {}
+    parts = temiz_metin.split(" ")
+    i = 0
+    while i < len(parts):
+        key = parts[i].replace(':', '')
+        if key and i + 1 < len(parts):
+            value = parts[i+1]
+            data[key] = value
+            i += 2
+        else:
+            i += 1
+            
+    return data
 
 app = Flask(__name__)
-app.secret_key = "a1b2c3d4e5f60718293a4b5c6d7e8f90"
-app.permanent_session_lifetime = timedelta(hours=6)
 CORS(app)
 
-def kullanicilari_yukle():
-    if not os.path.exists("users.json"):
-        with open("users.json", "w", encoding='utf-8') as f:
-            json.dump({
-                "admin": {"password": "1234", "banned": False, "ip": "", "device": ""}
-            }, f, indent=4)
-    with open("users.json", "r", encoding='utf-8') as f:
-        return json.load(f)
-
-def kullanicilari_kaydet(users):
-    with open("users.json", "w", encoding='utf-8') as f:
-        json.dump(users, f, indent=4, ensure_ascii=False)
-
-def cihaz_modeli():
-    return platform.platform()
-
-def ip_al():
-    return request.remote_addr
-
 @app.route("/")
-def login():
-    if "username" in session:
-        if session["username"] == "admin":
-            return redirect("/admin")
-        else:
-            return redirect("/anasayfa")
-    return send_from_directory(".", "login.html")
-
-@app.route("/login", methods=["POST"])
-def login_post():
-    username = request.form.get("username")
-    password = request.form.get("password")
-    users = kullanicilari_yukle()
-
-    if username in users and users[username]["password"] == password:
-        if users[username]["banned"]:
-            return "Bu kullanıcı yasaklanmıştır.", 403
-
-        session.permanent = True
-        session["username"] = username
-        users[username]["ip"] = ip_al()
-        users[username]["device"] = cihaz_modeli()
-        kullanicilari_kaydet(users)
-
-        if username == "admin":
-            return redirect("/admin")
-        else:
-            return redirect("/anasayfa")
-
-    return "Geçersiz kullanıcı adı veya şifre.", 401
-
-@app.route("/anasayfa")
 def anasayfa():
-    if "username" not in session:
-        return redirect("/")
     return send_from_directory(".", "anasayfa.html")
 
 @app.route("/admin")
 def admin():
-    if session.get("username") != "admin":
-        return redirect("/")
     return send_from_directory(".", "admin.html")
-
-@app.route("/api/users")
-def api_users():
-    if session.get("username") != "admin":
-        return jsonify(error="Yetkiniz yok"), 403
-    return jsonify(kullanicilari_yukle())
-
-@app.route("/api/add_user", methods=["POST"])
-def api_add_user():
-    if session.get("username") != "admin":
-        return jsonify(error="Yetkiniz yok"), 403
-
-    data = request.json
-    users = kullanicilari_yukle()
-    username = data.get("username")
-    password = data.get("password")
-
-    if not username or not password:
-        return jsonify(error="Eksik bilgi"), 400
-    if username in users:
-        return jsonify(error="Kullanıcı zaten mevcut"), 400
-
-    users[username] = {
-        "password": password,
-        "banned": False,
-        "ip": "",
-        "device": ""
-    }
-    kullanicilari_kaydet(users)
-    return jsonify(success=True, message="Kullanıcı başarıyla eklendi")
-
-@app.route("/api/ban_user", methods=["POST"])
-def api_ban_user():
-    if session.get("username") != "admin":
-        return jsonify(error="Yetkiniz yok"), 403
-
-    data = request.json
-    username = data.get("username")
-    users = kullanicilari_yukle()
-    if username in users and username != "admin":
-        users[username]["banned"] = True
-        kullanicilari_kaydet(users)
-        return jsonify(success=True, message=f"{username} yasaklandı")
-    return jsonify(error="Kullanıcı bulunamadı veya admin yasaklanamaz"), 404
-
-@app.route("/api/unban_user", methods=["POST"])
-def api_unban_user():
-    if session.get("username") != "admin":
-        return jsonify(error="Yetkiniz yok"), 403
-
-    data = request.json
-    username = data.get("username")
-    users = kullanicilari_yukle()
-    if username in users:
-        users[username]["banned"] = False
-        kullanicilari_kaydet(users)
-        return jsonify(success=True, message=f"{username} yasağı kaldırıldı")
-    return jsonify(error="Kullanıcı bulunamadı"), 404
-
-@app.route("/logout")
-def logout():
-    session.clear()
-    return redirect("/")
-
-def filtrele_veri(metin):
-    if not isinstance(metin, str):
-        return ""
-    satirlar = metin.strip().splitlines()
-    temiz = []
-    for s in satirlar:
-        s = s.strip()
-        if not s or "GEÇERSİZ" in s.upper() or s.startswith("http"):
-            continue
-        temiz.append(s)
-    return "\n".join(temiz)
 
 @app.route("/api/sorgu", methods=["POST"])
 def sorgu():
@@ -283,35 +168,35 @@ def sorgu():
     elif sorgu_tipi == "40":
         url = f"{base_url}/isyeri.php?tc={tc}"
     elif sorgu_tipi == "41":
-        # Kombine sorgu (1, 2, 3 ve 5)
         try:
             results = {}
 
-            # Sorgu 1 (Sülale)
             url1 = f"{base_url}/sulale.php?tc={tc}"
             response1 = requests.get(url1, headers=headers, timeout=90)
-            data1 = {"Sulale": filtrele_veri(response1.text)} if response1.status_code == 200 else {"Sulale": "Sorgu başarısız"}
-            results['sulale'] = ascii_sonuc("Sülale Sorgusu", data1)
+            results['Sülale'] = filtrele_veri(response1.text) if response1.status_code == 200 else {"Hata": "Sorgu başarısız"}
 
-            # Sorgu 2 (TC)
             url2 = f"{base_url}/tc.php?tc={tc}" if api == "1" else f"{base_url}/tcpro.php?tc={tc}"
             response2 = requests.get(url2, headers=headers, timeout=90)
-            data2 = {"TC": filtrele_veri(response2.text)} if response2.status_code == 200 else {"TC": "Sorgu başarısız"}
-            results['tc'] = ascii_sonuc("TC Sorgusu", data2)
+            results['TC'] = filtrele_veri(response2.text) if response2.status_code == 200 else {"Hata": "Sorgu başarısız"}
 
-            # Sorgu 3 (Adres)
             url3 = f"{base_url}/adres.php?tc={tc}"
             response3 = requests.get(url3, headers=headers, timeout=90)
-            data3 = {"Adres": filtrele_veri(response3.text)} if response3.status_code == 200 else {"Adres": "Sorgu başarısız"}
-            results['adres'] = ascii_sonuc("Adres Sorgusu", data3)
+            results['Adres'] = filtrele_veri(response3.text) if response3.status_code == 200 else {"Hata": "Sorgu başarısız"}
 
-            # Sorgu 5 (Aile)
             url5 = f"{base_url}/aile.php?tc={tc}"
             response5 = requests.get(url5, headers=headers, timeout=90)
-            data5 = {"Aile": filtrele_veri(response5.text)} if response5.status_code == 200 else {"Aile": "Sorgu başarısız"}
-            results['aile'] = ascii_sonuc("Aile Sorgusu", data5)
+            results['Aile'] = filtrele_veri(response5.text) if response5.status_code == 200 else {"Hata": "Sorgu başarısız"}
 
-            return jsonify(success=True, results=results)
+            # Her bir sonucu tek bir kutuda düzenlemek için
+            all_results = {}
+            for k, v in results.items():
+                if isinstance(v, dict):
+                    all_results.update(v)
+                else:
+                    all_results[k] = v
+                    
+            formatted_results = format_box("Kombine Sorgu Sonuçları", all_results)
+            return jsonify(success=True, result=formatted_results)
 
         except requests.exceptions.RequestException as e:
             return jsonify(success=False, message=f"Hata: {str(e)}")
@@ -321,11 +206,12 @@ def sorgu():
     try:
         response = requests.get(url, headers=headers, timeout=90, verify=False)
         response.raise_for_status()
+        
+        # Filtrelenmiş metni anahtar-değer çiftlerine dönüştür
         filtrelenmis = filtrele_veri(response.text)
         
         if filtrelenmis:
-            # Tek bir sonuç döndüren sorgular için formatlama
-            formatted_result = ascii_sonuc("Sorgu Sonucu", {"Sonuç": filtrelenmis})
+            formatted_result = format_box("Sorgu Sonucu", filtrelenmis)
             return jsonify(success=True, result=formatted_result)
         else:
             return jsonify(success=False, message="Veri bulunamadı veya geçersiz")
