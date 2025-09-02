@@ -9,10 +9,10 @@ import json
 def format_box(title, data: dict):
     # En uzun anahtar ve değerin uzunluğunu bul
     max_key_len = max(len(k) for k in data.keys()) if data else 0
-    max_value_len = max(len(str(v)) for v in data.values()) if data else 0
+    max_value_len = max(len(v) for v in data.values()) if data else 0
     
     # Kutu genişliğini belirle
-    content_width = max_key_len + max_value_len + 3
+    content_width = max_key_len + max_value_len + 3 # : ve boşluk için 3 karakter
     title_width = len(title)
     width = max(content_width, title_width) + 4
     
@@ -33,17 +33,28 @@ def format_box(title, data: dict):
 # -------------------------
 # Basit veri filtreleme fonksiyonu
 # -------------------------
-def filtrele_veri(data):
-    if not isinstance(data, dict):
-        return {"Hata": "Geçersiz veri formatı"}
+def filtrele_veri(metin):
+    if not isinstance(metin, str):
+        return ""
     
-    temiz_veri = {}
-    for key, value in data.items():
-        if isinstance(value, str) and ("GEÇERSİZ" in value.upper() or value.startswith("http")):
-            continue
-        temiz_veri[key] = value
+    temiz_metin = metin.strip().replace('\n', ' ').replace('\r', '')
+    if "GEÇERSİZ" in temiz_metin.upper() or temiz_metin.startswith("http"):
+        return ""
+
+    # Veriyi anahtar-değer çiftlerine ayırma
+    data = {}
+    parts = temiz_metin.split(" ")
+    i = 0
+    while i < len(parts):
+        key = parts[i].replace(':', '')
+        if key and i + 1 < len(parts):
+            value = parts[i+1]
+            data[key] = value
+            i += 2
+        else:
+            i += 1
             
-    return temiz_veri
+    return data
 
 app = Flask(__name__)
 CORS(app)
@@ -162,32 +173,32 @@ def sorgu():
 
             url1 = f"{base_url}/sulale.php?tc={tc}"
             response1 = requests.get(url1, headers=headers, timeout=90)
-            results['Sülale'] = response1.json().get('data', {}) if response1.status_code == 200 else {"Hata": "Sorgu başarısız"}
+            results['Sülale'] = filtrele_veri(response1.text) if response1.status_code == 200 else {"Hata": "Sorgu başarısız"}
 
             url2 = f"{base_url}/tc.php?tc={tc}" if api == "1" else f"{base_url}/tcpro.php?tc={tc}"
             response2 = requests.get(url2, headers=headers, timeout=90)
-            results['TC'] = response2.json().get('data', {}) if response2.status_code == 200 else {"Hata": "Sorgu başarısız"}
+            results['TC'] = filtrele_veri(response2.text) if response2.status_code == 200 else {"Hata": "Sorgu başarısız"}
 
             url3 = f"{base_url}/adres.php?tc={tc}"
             response3 = requests.get(url3, headers=headers, timeout=90)
-            results['Adres'] = response3.json().get('data', {}) if response3.status_code == 200 else {"Hata": "Sorgu başarısız"}
+            results['Adres'] = filtrele_veri(response3.text) if response3.status_code == 200 else {"Hata": "Sorgu başarısız"}
 
             url5 = f"{base_url}/aile.php?tc={tc}"
             response5 = requests.get(url5, headers=headers, timeout=90)
-            results['Aile'] = response5.json().get('data', {}) if response5.status_code == 200 else {"Hata": "Sorgu başarısız"}
+            results['Aile'] = filtrele_veri(response5.text) if response5.status_code == 200 else {"Hata": "Sorgu başarısız"}
 
             # Her bir sonucu tek bir kutuda düzenlemek için
             all_results = {}
             for k, v in results.items():
                 if isinstance(v, dict):
-                    all_results.update({f"{k.capitalize()}_{key}": value for key, value in v.items()})
+                    all_results.update(v)
                 else:
                     all_results[k] = v
                     
             formatted_results = format_box("Kombine Sorgu Sonuçları", all_results)
             return jsonify(success=True, result=formatted_results)
 
-        except (requests.exceptions.RequestException, json.JSONDecodeError) as e:
+        except requests.exceptions.RequestException as e:
             return jsonify(success=False, message=f"Hata: {str(e)}")
     else:
         return jsonify(success=False, message="Geçersiz sorgu tipi"), 400
@@ -196,18 +207,15 @@ def sorgu():
         response = requests.get(url, headers=headers, timeout=90, verify=False)
         response.raise_for_status()
         
-        # Yanıtı JSON olarak işle
-        api_data = response.json()
+        # Filtrelenmiş metni anahtar-değer çiftlerine dönüştür
+        filtrelenmis = filtrele_veri(response.text)
         
-        # Sadece 'data' anahtarındaki veriyi al, yoksa boş bir sözlük kullan
-        result_data = api_data.get('data', {})
-
-        if result_data:
-            formatted_result = format_box("Sorgu Sonucu", result_data)
+        if filtrelenmis:
+            formatted_result = format_box("Sorgu Sonucu", filtrelenmis)
             return jsonify(success=True, result=formatted_result)
         else:
             return jsonify(success=False, message="Veri bulunamadı veya geçersiz")
-    except (requests.exceptions.RequestException, json.JSONDecodeError) as e:
+    except requests.exceptions.RequestException as e:
         return jsonify(success=False, message=f"Hata: {str(e)}")
 
 if __name__ == "__main__":
