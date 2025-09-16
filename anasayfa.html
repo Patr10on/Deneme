@@ -3,22 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sorgu Paneli</title>
+    <title>P4TRON</title>
     <style>
-        :        :root {
+        @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap');
+
+        :root {
             --bg-color: #020617;
             --primary: #0ea5e9;
             --secondary: #67e8f9;
             --text: #e2e8f0;
             --panel-bg: rgba(15, 23, 42, 0.6);
             --border: rgba(56, 189, 248, 0.3);
+            --error: #ef4444;
+            --success: #22c55e;
+            --panel-glow: rgba(14, 165, 233, 0.1);
+            --sidebar-bg: rgba(2, 6, 23, 0.8);
+            --sidebar-border: rgba(56, 189, 248, 0.15);
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Courier New', monospace;
+            font-family: 'Roboto Mono', monospace;
         }
 
         body {
@@ -30,23 +37,90 @@
             flex-direction: column;
             align-items: center;
             position: relative;
-            overflow-x: hidden;
+            animation: background-glow 10s infinite alternate;
+        }
+
+        @keyframes background-glow {
+            from { box-shadow: 0 0 200px rgba(14, 165, 233, 0.05) inset; }
+            to { box-shadow: 0 0 200px rgba(14, 165, 233, 0.15) inset; }
         }
 
         .header {
-            font-size: 2.5rem;
+            font-size: clamp(1.8rem, 5vw, 2.5rem);
             margin: 20px 0;
             color: var(--primary);
-            text-shadow: 0 0 10px var(--primary);
+            text-shadow: 0 0 10px var(--primary), 0 0 20px var(--primary);
             letter-spacing: 3px;
+            animation: header-pulse 5s infinite;
+            text-align: center;
+            width: 100%;
         }
 
-        .container {
+        @keyframes header-pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.03); opacity: 0.95; }
+        }
+
+        .main-container {
             display: flex;
             flex-direction: column;
-            gap: 20px;
             width: 100%;
-            max-width: 800px;
+            max-width: 1200px;
+            margin: 0 auto;
+            gap: 20px;
+        }
+
+        .menu-toggle {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 101;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid var(--border);
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: transform 0.3s;
+        }
+        
+        .menu-toggle:hover {
+            transform: scale(1.1);
+        }
+
+        .menu-toggle span {
+            display: block;
+            width: 4px;
+            height: 4px;
+            background: var(--primary);
+            border-radius: 50%;
+            margin: 2px 0;
+            box-shadow: 0 0 8px var(--primary);
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 280px;
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--sidebar-border);
+            backdrop-filter: blur(15px);
+            z-index: 100;
+            transform: translateX(-100%);
+            transition: transform 0.4s ease-in-out;
+            padding: 80px 20px 20px 20px;
+            overflow-y: auto;
+            box-shadow: 5px 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .sidebar.open {
+            transform: translateX(0);
         }
 
         .panel {
@@ -55,7 +129,19 @@
             border-radius: 10px;
             padding: 20px;
             backdrop-filter: blur(10px);
-            box-shadow: 0 0 20px rgba(14, 165, 233, 0.1);
+            box-shadow: 0 0 20px var(--panel-glow);
+            animation: panel-fade-in 0.8s ease-out;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .panel:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 30px var(--panel-glow);
+        }
+
+        @keyframes panel-fade-in {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .panel-title {
@@ -81,8 +167,15 @@
             border: 1px solid var(--border);
             border-radius: 5px;
             color: var(--text);
+            transition: all 0.3s ease;
         }
 
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 8px rgba(14, 165, 233, 0.5);
+        }
+        
         button {
             background: var(--primary);
             color: var(--bg-color);
@@ -94,6 +187,22 @@
             width: 100%;
             margin-top: 10px;
             transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        button::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 5px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.5);
+            opacity: 0;
+            border-radius: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            transition: transform 0.5s, opacity 0.5s;
         }
 
         button:hover {
@@ -101,12 +210,27 @@
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(103, 232, 249, 0.3);
         }
+        
+        button:hover::after {
+            transform: translate(-50%, -50%) scale(100);
+            opacity: 1;
+        }
 
         button:disabled {
             background: #64748b;
             cursor: not-allowed;
             transform: none;
             box-shadow: none;
+        }
+
+        button.success {
+            background-color: var(--success);
+            box-shadow: 0 5px 15px rgba(34, 197, 94, 0.3);
+        }
+
+        button.error {
+            background-color: var(--error);
+            box-shadow: 0 5px 15px rgba(239, 68, 68, 0.3);
         }
 
         .result {
@@ -119,6 +243,21 @@
             overflow-y: auto;
             white-space: pre-wrap;
             font-family: monospace;
+            line-height: 1.5;
+            transition: all 0.3s;
+        }
+        
+        .result strong {
+            color: var(--secondary);
+        }
+
+        .result p {
+            margin-bottom: 5px;
+        }
+
+        .result .highlight {
+            color: var(--primary);
+            font-weight: bold;
         }
 
         .actions {
@@ -138,6 +277,7 @@
 
         .actions button:hover {
             background: rgba(14, 165, 233, 0.1);
+            transform: translateY(-2px);
         }
 
         .loader {
@@ -160,88 +300,215 @@
             position: fixed;
             bottom: 20px;
             right: 20px;
-            padding: 10px 15px;
+            padding: 12px 18px;
             background: rgba(15, 23, 42, 0.9);
-            border: 1px solid var(--primary);
             border-radius: 5px;
             transform: translateX(200%);
-            transition: transform 0.3s;
+            transition: transform 0.4s ease-out;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 100;
         }
 
         .notification.show {
             transform: translateX(0);
         }
 
-        @media (max-width: 600px) {
-            .header {
-                font-size: 1.8rem;
-            }
+        .notification.success { border: 1px solid var(--success); }
+        .notification.error { border: 1px solid var(--error); }
 
-            .panel {
-                padding: 15px;
-            }
+        .notification-icon {
+            font-size: 1.5rem;
         }
+
+        #inputs > div {
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+
+        #inputs.show > div {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .input-field {
+            animation: input-fade-in 0.6s ease-out;
+        }
+
+        @keyframes input-fade-in {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Sidebar CSS */
+        .sidebar-title {
+            color: var(--primary);
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--sidebar-border);
+            padding-bottom: 5px;
+        }
+
+        .sorgu-category {
+            margin-bottom: 15px;
+        }
+
+        .category-header {
+            color: var(--secondary);
+            font-weight: bold;
+            font-size: 1rem;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+        
+        .category-header:hover {
+            color: var(--primary);
+        }
+
+        .sorgu-list {
+            list-style: none;
+            padding-left: 10px;
+        }
+
+        .sorgu-list li {
+            padding: 5px 0;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .sorgu-list li::before {
+            content: '>';
+            color: var(--primary);
+            margin-right: 5px;
+            transition: margin-right 0.2s;
+        }
+        
+        .sorgu-list li:hover {
+            color: var(--secondary);
+            transform: translateX(5px);
+        }
+
+        .sorgu-list li.active {
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            z-index: 99;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.4s ease-in-out;
+        }
+
+        .overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+        
     </style>
 </head>
 <body>
+    <div class="menu-toggle" id="menu-toggle">
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-title">Sorgu Menüsü</div>
+
+        <label for="api">API Seçin:</label>
+        <select id="api">
+            <option value="1">API 1</option>
+            <option value="2">API 2</option>
+        </select>
+        
+        <div class="sorgu-category">
+            <div class="category-header">Kimlik Sorguları</div>
+            <ul class="sorgu-list">
+                <li data-sorgu="1">1 - Sülale Sorgu</li>
+                <li data-sorgu="2">2 - TC Bilgi</li>
+                <li data-sorgu="3">3 - Adres Sorgu</li>
+                <li data-sorgu="4">4 - Ad+Soyad+İl</li>
+                <li data-sorgu="5">5 - Aile Sorgu</li>
+                <li data-sorgu="8">8 - Diploma Sorgu</li>
+                <li data-sorgu="12">12 - CM Bilgisi</li>
+                <li data-sorgu="13">13 - Çocuk Bilgisi</li>
+                <li data-sorgu="14">14 - Anne Bilgisi</li>
+                <li data-sorgu="15">15 - Ehliyet Sorgu</li>
+                <li data-sorgu="19">19 - Hikaye Sorgu</li>
+                <li data-sorgu="20">20 - Vesika Sorgu</li>
+                <li data-sorgu="21">21 - Hane Sorgu</li>
+                <li data-sorgu="22">22 - Muhattap Sorgu</li>
+                <li data-sorgu="26">26 - Sertifika Sorgu</li>
+                <li data-sorgu="27">27 - Üniversite Sorgu</li>
+                <li data-sorgu="31">31 - Personel Sorgu</li>
+                <li data-sorgu="33">33 - NVI Sorgu</li>
+                <li data-sorgu="35">35 - Başvuru Sorgu</li>
+                <li data-sorgu="36">36 - Polis Kaydı</li>
+                <li data-sorgu="37">37 - Tapu Sorgu</li>
+                <li data-sorgu="38">38 - Okul No Sorgu</li>
+                <li data-sorgu="39">39 - İşyeri Yetkili</li>
+                <li data-sorgu="40">40 - İşyeri Sorgu</li>
+                <li data-sorgu="41">41 - İNFO Sorgu (1+2+3+5)</li>
+            </ul>
+        </div>
+        
+        <div class="sorgu-category">
+            <div class="category-header">Telefon / İletişim Sorguları</div>
+            <ul class="sorgu-list">
+                <li data-sorgu="6">6 - Numaradan TC</li>
+                <li data-sorgu="7">7 - TC'den Numara</li>
+                <li data-sorgu="17">17 - Operatör Sorgu</li>
+                <li data-sorgu="18">18 - Telegram Sorgu</li>
+                <li data-sorgu="32">32 - İnternet Abonelik</li>
+            </ul>
+        </div>
+
+        <div class="sorgu-category">
+            <div class="category-header">Araç / Plaka Sorguları</div>
+            <ul class="sorgu-list">
+                <li data-sorgu="24">24 - Plaka Sorgu</li>
+                <li data-sorgu="28">28 - Araç Parça Sorgu</li>
+            </ul>
+        </div>
+
+        <div class="sorgu-category">
+            <div class="category-header">Diğer Sorgular</div>
+            <ul class="sorgu-list">
+                <li data-sorgu="9">9 - Ayak No Sorgu</li>
+                <li data-sorgu="10">10 - Boy Sorgu</li>
+                <li data-sorgu="11">11 - Burç Sorgu</li>
+                <li data-sorgu="16">16 - IMEI Sorgu</li>
+                <li data-sorgu="23">23 - LGS Sonuç</li>
+                <li data-sorgu="25">25 - İG @by_.ram</li>
+                <li data-sorgu="29">29 - Şehit Sorgu</li>
+                <li data-sorgu="30">30 - Interpol Sorgu</li>
+                <li data-sorgu="34">34 - Nezaket Sorgu</li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="overlay" id="overlay"></div>
+
     <h1 class="header">P4TRON</h1>
 
-    <div class="container">
+    <div class="main-container">
         <div class="panel">
-            <div class="panel-title">Sorgu Paneli</div>
-            <label for="api">API Seçin:</label>
-            <select id="api">
-                <option value="1">API 1</option>
-                <option value="2">API 2</option>
-            </select>
-
-            <label for="sorgu">Sorgu Türü:</label>
-            <select id="sorgu">
-                <option value="1">1 - Sülale Sorgu</option>
-                <option value="2">2 - TC Bilgi</option>
-                <option value="3">3 - Adres Sorgu</option>
-                <option value="4">4 - Ad+Soyad+İl</option>
-                <option value="5">5 - Aile Sorgu</option>
-                <option value="6">6 - Numaradan TC</option>
-                <option value="7">7 - TC'den Numara</option>
-                <option value="8">8 - Diploma Sorgu</option>
-                <option value="9">9 - Ayak No Sorgu</option>
-                <option value="10">10 - Boy Sorgu</option>
-                <option value="11">11 - Burç Sorgu</option>
-                <option value="12">12 - CM Bilgisi</option>
-                <option value="13">13 - Çocuk Bilgisi</option>
-                <option value="14">14 - Anne Bilgisi</option>
-                <option value="15">15 - Ehliyet Sorgu</option>
-                <option value="16">16 - IMEI Sorgu</option>
-                <option value="17">17 - Operatör Sorgu</option>
-                <option value="18">18 - Telegram Sorgu</option>
-                <option value="19">19 - Hikaye Sorgu</option>
-                <option value="20">20 - Vesika Sorgu</option>
-                <option value="21">21 - Hane Sorgu</option>
-                <option value="22">22 - Muhattap Sorgu</option>
-                <option value="23">23 - LGS Sonuç</option>
-                <option value="24">24 - Plaka Sorgu</option>
-                <option value="25">25 - İG @by_.ram</option>
-                <option value="26">26 - Sertifika Sorgu</option>
-                <option value="27">27 - Üniversite Sorgu</option>
-                <option value="28">28 - Araç Parça Sorgu</option>
-                <option value="29">29 - Şehit Sorgu</option>
-                <option value="30">30 - Interpol Sorgu</option>
-                <option value="31">31 - Personel Sorgu</option>
-                <option value="32">32 - İnternet Abonelik</option>
-                <option value="33">33 - NVI Sorgu</option>
-                <option value="34">34 - Nezaket Sorgu</option>
-                <option value="35">35 - Başvuru Sorgu</option>
-                <option value="36">36 - Polis Kaydı</option>
-                <option value="37">37 - Tapu Sorgu</option>
-                <option value="38">38 - Okul No Sorgu</option>
-                <option value="39">39 - İşyeri Yetkili</option>
-                <option value="40">40 - İşyeri Sorgu</option>
-                <option value="41">41 - İNFO Sorgu (1+2+3+5)</option>
-            </select>
-
+            <div class="panel-title" id="sorgu-panel-title">Sorgu Formu</div>
             <div id="inputs"></div>
-
             <button id="submit">
                 <span id="button-text">SORGULA</span>
                 <div class="loader" id="loader"></div>
@@ -250,10 +517,7 @@
 
         <div class="panel">
             <div class="panel-title">Sorgu Sonucu</div>
-
-            <!-- Filtreleme alanı eklendi -->
             <input type="text" id="filterInput" placeholder="Sonuçları filtrele..." class="input-field mb-4">
-
             <div class="result" id="result"></div>
             <div class="actions">
                 <button id="copy-btn">Kopyala</button>
@@ -263,12 +527,15 @@
         </div>
     </div>
 
-    <div class="notification" id="notification"></div>
+    <div class="notification" id="notification">
+        <span id="notification-icon"></span>
+        <span id="notification-message"></span>
+    </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const apiSelect = document.getElementById('api');
-            const sorguSelect = document.getElementById('sorgu');
+            const sorguListItems = document.querySelectorAll('.sorgu-list li');
             const inputsDiv = document.getElementById('inputs');
             const submitBtn = document.getElementById('submit');
             const buttonText = document.getElementById('button-text');
@@ -278,12 +545,18 @@
             const downloadBtn = document.getElementById('download-btn');
             const clearBtn = document.getElementById('clear-btn');
             const notification = document.getElementById('notification');
+            const notificationIcon = document.getElementById('notification-icon');
+            const notificationMessage = document.getElementById('notification-message');
             const filterInput = document.getElementById('filterInput');
+            const menuToggle = document.getElementById('menu-toggle');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            const sorguPanelTitle = document.getElementById('sorgu-panel-title');
 
             let lastResult = '';
-            let originalResult = ''; // Orijinal sonucu tutmak için yeni değişken
+            let originalResult = '';
+            let selectedSorguType = '';
 
-            // Sorgu tiplerine göre gerekli inputları belirleyen nesne
             const requiredInputs = {
                 '1': ['tc'], '2': ['tc'], '3': ['tc'], '4': ['ad', 'soyad', 'il'], '5': ['tc'],
                 '6': ['gsm'], '7': ['tc'], '8': ['tc'], '9': ['tc'], '10': ['tc'],
@@ -296,11 +569,22 @@
                 '41': ['tc']
             };
 
-            // Input alanlarını güncelle
+            // Menü açma/kapama işlevselliği
+            menuToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('open');
+                overlay.classList.toggle('visible');
+            });
+            overlay.addEventListener('click', () => {
+                sidebar.classList.remove('open');
+                overlay.classList.remove('visible');
+            });
+
             function updateInputs() {
                 inputsDiv.innerHTML = '';
-                const sorguType = sorguSelect.value;
-                const inputs = requiredInputs[sorguType] || [];
+                const inputs = requiredInputs[selectedSorguType] || [];
+                const sorguName = document.querySelector(`li[data-sorgu='${selectedSorguType}']`).textContent;
+                
+                sorguPanelTitle.textContent = sorguName;
 
                 inputs.forEach(inputName => {
                     let labelText = '';
@@ -347,7 +631,6 @@
                 });
             }
 
-            // Input ekleme fonksiyonu
             function addInput(id, label, placeholder) {
                 const div = document.createElement('div');
                 div.innerHTML = `
@@ -355,26 +638,55 @@
                     <input type="text" id="${id}" placeholder="${placeholder}" class="input-field">
                 `;
                 inputsDiv.appendChild(div);
+                setTimeout(() => {
+                    div.style.opacity = '1';
+                    div.style.transform = 'translateY(0)';
+                }, 100);
             }
 
-            // Bildirim göster
             function showNotification(message, type = 'success') {
-                notification.textContent = message;
-                notification.style.borderColor = type === 'success' ? '#db2777' : '#f87171';
-                notification.classList.add('show');
+                notificationMessage.textContent = message;
+                notification.className = `notification show ${type}`;
+                notificationIcon.textContent = type === 'success' ? '✅' : '❌';
 
                 setTimeout(() => {
                     notification.classList.remove('show');
                 }, 3000);
             }
 
-            // Sorgu gönder
-            async function sendQuery() {
-                const api = apiSelect.value;
-                const sorguType = sorguSelect.value;
-                const data = { api, sorgu: sorguType };
+            function formatResult(text) {
+                if (!text) return '';
+                let formattedText = text;
+                const lines = formattedText.split('\n');
+                const keywords = ["Adı:", "Soyadı:", "TCKN:", "Telefon:", "Adres:", "Plaka:", "IMEI:", "TC NO:", "TC:", "Anne Adı:", "Baba Adı:", "GSM:", "Tarih:", "Sıra No:", "İl/İlçe:", "Ad:", "Soyad:"];
+                
+                lines.forEach((line, index) => {
+                    keywords.forEach(keyword => {
+                        if (line.includes(keyword)) {
+                            const parts = line.split(keyword);
+                            if (parts.length > 1) {
+                                let value = parts[1].trim();
+                                if (value) {
+                                    value = `<span class="highlight">${value}</span>`;
+                                }
+                                lines[index] = `${parts[0]}<strong>${keyword}</strong> ${value}`;
+                            }
+                        }
+                    });
+                });
+                return lines.join('<br>');
+            }
 
-                const inputs = requiredInputs[sorguType] || [];
+            async function sendQuery() {
+                if (!selectedSorguType) {
+                    showNotification('Lütfen önce yan panelden bir sorgu seçin!', 'error');
+                    return;
+                }
+
+                const api = apiSelect.value;
+                const data = { api, sorgu: selectedSorguType };
+                const inputs = requiredInputs[selectedSorguType] || [];
+
                 for (const inputName of inputs) {
                     const inputElement = document.getElementById(inputName);
                     if (!inputElement || !inputElement.value.trim()) {
@@ -387,90 +699,84 @@
                 submitBtn.disabled = true;
                 buttonText.style.display = 'none';
                 loader.style.display = 'block';
-                resultDiv.textContent = 'Sorgulanıyor...';
+                submitBtn.classList.remove('success', 'error');
+                resultDiv.innerHTML = 'Sorgulanıyor...';
+                resultDiv.style.opacity = 0.5;
 
                 try {
                     const response = await fetch('/api/sorgu', {
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
+                        headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(data)
                     });
-
                     const result = await response.json();
 
                     if (result.success) {
-                        if (result.results) { // Kombine sorgu için
+                        let resultText;
+                        if (result.results) {
                             let combinedOutput = '';
                             for (const key in result.results) {
                                 combinedOutput += `--- ${key.toUpperCase()} ---\n${result.results[key]}\n\n`;
                             }
-                            lastResult = combinedOutput;
-                        } else { // Tekli sorgu için
-                            lastResult = result.result;
+                            resultText = combinedOutput;
+                        } else {
+                            resultText = result.result;
                         }
-                        originalResult = lastResult; // Orijinal sonucu sakla
-                        resultDiv.textContent = lastResult;
+                        originalResult = resultText;
+                        resultDiv.innerHTML = formatResult(resultText);
+                        submitBtn.classList.add('success');
                         showNotification('Sorgu başarılı!', 'success');
                     } else {
                         lastResult = result.message || 'Sorgu başarısız oldu.';
                         originalResult = lastResult;
-                        resultDiv.textContent = lastResult;
+                        resultDiv.innerHTML = lastResult;
+                        submitBtn.classList.add('error');
                         showNotification(lastResult, 'error');
                     }
                 } catch (error) {
                     lastResult = `Hata: ${error.message}`;
                     originalResult = lastResult;
-                    resultDiv.textContent = `Bir hata oluştu: ${error.message}`;
+                    resultDiv.innerHTML = `Bir hata oluştu: ${error.message}`;
+                    submitBtn.classList.add('error');
                     showNotification('Sorgu başarısız!', 'error');
                 } finally {
+                    setTimeout(() => { submitBtn.classList.remove('success', 'error'); }, 2000);
                     submitBtn.disabled = false;
                     buttonText.style.display = 'block';
                     loader.style.display = 'none';
-                    filterInput.value = ''; // Filtreleme kutusunu temizle
+                    filterInput.value = '';
+                    resultDiv.style.opacity = 1;
                 }
             }
 
-            // Filtreleme fonksiyonu
             function filterResult() {
                 const filterText = filterInput.value.toLowerCase();
                 if (!filterText) {
-                    resultDiv.textContent = originalResult;
+                    resultDiv.innerHTML = formatResult(originalResult);
                     return;
                 }
-
                 const lines = originalResult.split('\n');
                 const filteredLines = lines.filter(line => line.toLowerCase().includes(filterText));
-                resultDiv.textContent = filteredLines.join('\n');
+                resultDiv.innerHTML = formatResult(filteredLines.join('\n'));
             }
 
-            // Kopyala butonu
             copyBtn.addEventListener('click', () => {
-                if (!lastResult) {
-                    showNotification('Kopyalanacak sonuç yok!', 'error');
-                    return;
-                }
-                navigator.clipboard.writeText(resultDiv.textContent)
+                if (!lastResult) { showNotification('Kopyalanacak sonuç yok!', 'error'); return; }
+                const plainText = resultDiv.textContent || resultDiv.innerText;
+                navigator.clipboard.writeText(plainText)
                     .then(() => showNotification('Panoya kopyalandı!', 'success'))
                     .catch(() => showNotification('Kopyalama başarısız!', 'error'));
             });
 
-            // İndir butonu
             downloadBtn.addEventListener('click', () => {
-                if (!lastResult) {
-                    showNotification('İndirilecek sonuç yok!', 'error');
-                    return;
-                }
-                const blob = new Blob([lastResult], { type: 'text/plain' });
+                if (!lastResult) { showNotification('İndirilecek sonuç yok!', 'error'); return; }
+                const plainText = resultDiv.textContent || resultDiv.innerText;
+                const blob = new Blob([plainText], { type: 'text/plain' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-
-                let fileName;
-                const sorguAdi = sorguSelect.options[sorguSelect.selectedIndex].text.split('-')[1].trim();
-                fileName = `Patron_${sorguAdi}_${new Date().toISOString().slice(0, 10)}.txt`;
-
+                const sorguAdi = document.querySelector(`li[data-sorgu='${selectedSorguType}']`).textContent;
+                const fileName = `Patron_${sorguAdi}_${new Date().toISOString().slice(0, 10)}.txt`;
                 a.download = fileName;
                 document.body.appendChild(a);
                 a.click();
@@ -479,22 +785,29 @@
                 showNotification('Dosya indiriliyor...', 'success');
             });
 
-            // Temizle butonu
             clearBtn.addEventListener('click', () => {
-                resultDiv.textContent = '';
+                resultDiv.innerHTML = '';
                 lastResult = '';
                 originalResult = '';
                 filterInput.value = '';
                 showNotification('Sonuçlar temizlendi!', 'success');
             });
 
-            // Olay dinleyicileri
-            sorguSelect.addEventListener('change', updateInputs);
+            sorguListItems.forEach(item => {
+                item.addEventListener('click', (e) => {
+                    document.querySelectorAll('.sorgu-list li').forEach(li => li.classList.remove('active'));
+                    e.target.classList.add('active');
+                    selectedSorguType = e.target.dataset.sorgu;
+                    updateInputs();
+                    sidebar.classList.remove('open');
+                    overlay.classList.remove('visible');
+                });
+            });
+
             submitBtn.addEventListener('click', sendQuery);
             filterInput.addEventListener('input', filterResult);
-
-            // İlk yüklemede inputları ayarla
-            updateInputs();
+            
+            sorguListItems[0].click();
         });
     </script>
 </body>
