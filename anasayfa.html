@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PATRØN Sorgu Paneli</title>
+    <title>Sorgu Paneli</title>
     <style>
-        :root {
+        :        :root {
             --bg-color: #020617;
             --primary: #0ea5e9;
             --secondary: #67e8f9;
@@ -13,14 +13,14 @@
             --panel-bg: rgba(15, 23, 42, 0.6);
             --border: rgba(56, 189, 248, 0.3);
         }
-        
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             font-family: 'Courier New', monospace;
         }
-        
+
         body {
             background-color: var(--bg-color);
             color: var(--text);
@@ -32,7 +32,7 @@
             position: relative;
             overflow-x: hidden;
         }
-        
+
         .header {
             font-size: 2.5rem;
             margin: 20px 0;
@@ -40,7 +40,7 @@
             text-shadow: 0 0 10px var(--primary);
             letter-spacing: 3px;
         }
-        
+
         .container {
             display: flex;
             flex-direction: column;
@@ -48,7 +48,7 @@
             width: 100%;
             max-width: 800px;
         }
-        
+
         .panel {
             background: var(--panel-bg);
             border: 1px solid var(--border);
@@ -57,7 +57,7 @@
             backdrop-filter: blur(10px);
             box-shadow: 0 0 20px rgba(14, 165, 233, 0.1);
         }
-        
+
         .panel-title {
             color: var(--primary);
             margin-bottom: 15px;
@@ -65,14 +65,14 @@
             border-bottom: 1px solid var(--border);
             padding-bottom: 5px;
         }
-        
+
         label {
             display: block;
             margin-bottom: 5px;
             color: var(--secondary);
             font-size: 0.9rem;
         }
-        
+
         select, input {
             width: 100%;
             padding: 10px;
@@ -82,7 +82,7 @@
             border-radius: 5px;
             color: var(--text);
         }
-        
+
         button {
             background: var(--primary);
             color: var(--bg-color);
@@ -95,20 +95,20 @@
             margin-top: 10px;
             transition: all 0.3s;
         }
-        
+
         button:hover {
             background: var(--secondary);
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(103, 232, 249, 0.3);
         }
-        
+
         button:disabled {
             background: #64748b;
             cursor: not-allowed;
             transform: none;
             box-shadow: none;
         }
-        
+
         .result {
             background: rgba(2, 6, 23, 0.5);
             border: 1px solid var(--border);
@@ -120,13 +120,13 @@
             white-space: pre-wrap;
             font-family: monospace;
         }
-        
+
         .actions {
             display: flex;
             gap: 10px;
             margin-top: 10px;
         }
-        
+
         .actions button {
             flex: 1;
             padding: 8px;
@@ -135,11 +135,11 @@
             color: var(--text);
             border: 1px solid var(--border);
         }
-        
+
         .actions button:hover {
             background: rgba(14, 165, 233, 0.1);
         }
-        
+
         .loader {
             border: 3px solid rgba(14, 165, 233, 0.2);
             border-top: 3px solid var(--primary);
@@ -150,12 +150,12 @@
             margin: 0 auto;
             display: none;
         }
-        
+
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-        
+
         .notification {
             position: fixed;
             bottom: 20px;
@@ -167,16 +167,16 @@
             transform: translateX(200%);
             transition: transform 0.3s;
         }
-        
+
         .notification.show {
             transform: translateX(0);
         }
-        
+
         @media (max-width: 600px) {
             .header {
                 font-size: 1.8rem;
             }
-            
+
             .panel {
                 padding: 15px;
             }
@@ -184,8 +184,8 @@
     </style>
 </head>
 <body>
-    <h1 class="header">PATRØN</h1>
-    
+    <h1 class="header">P4TRON</h1>
+
     <div class="container">
         <div class="panel">
             <div class="panel-title">Sorgu Paneli</div>
@@ -194,7 +194,7 @@
                 <option value="1">API 1</option>
                 <option value="2">API 2</option>
             </select>
-            
+
             <label for="sorgu">Sorgu Türü:</label>
             <select id="sorgu">
                 <option value="1">1 - Sülale Sorgu</option>
@@ -239,17 +239,21 @@
                 <option value="40">40 - İşyeri Sorgu</option>
                 <option value="41">41 - İNFO Sorgu (1+2+3+5)</option>
             </select>
-            
+
             <div id="inputs"></div>
-            
+
             <button id="submit">
                 <span id="button-text">SORGULA</span>
                 <div class="loader" id="loader"></div>
             </button>
         </div>
-        
+
         <div class="panel">
             <div class="panel-title">Sorgu Sonucu</div>
+
+            <!-- Filtreleme alanı eklendi -->
+            <input type="text" id="filterInput" placeholder="Sonuçları filtrele..." class="input-field mb-4">
+
             <div class="result" id="result"></div>
             <div class="actions">
                 <button id="copy-btn">Kopyala</button>
@@ -258,11 +262,12 @@
             </div>
         </div>
     </div>
-    
+
     <div class="notification" id="notification"></div>
-    
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            const apiSelect = document.getElementById('api');
             const sorguSelect = document.getElementById('sorgu');
             const inputsDiv = document.getElementById('inputs');
             const submitBtn = document.getElementById('submit');
@@ -273,285 +278,221 @@
             const downloadBtn = document.getElementById('download-btn');
             const clearBtn = document.getElementById('clear-btn');
             const notification = document.getElementById('notification');
-            
+            const filterInput = document.getElementById('filterInput');
+
             let lastResult = '';
-            let lastSorguType = '1';
-            
+            let originalResult = ''; // Orijinal sonucu tutmak için yeni değişken
+
+            // Sorgu tiplerine göre gerekli inputları belirleyen nesne
+            const requiredInputs = {
+                '1': ['tc'], '2': ['tc'], '3': ['tc'], '4': ['ad', 'soyad', 'il'], '5': ['tc'],
+                '6': ['gsm'], '7': ['tc'], '8': ['tc'], '9': ['tc'], '10': ['tc'],
+                '11': ['tc'], '12': ['tc'], '13': ['tc'], '14': ['tc'], '15': ['tc'],
+                '16': ['imei'], '17': ['gsm'], '18': ['username'], '19': ['tc'], '20': ['tc'],
+                '21': ['tc'], '22': ['tc'], '23': ['tc'], '24': ['plaka'], '25': [],
+                '26': ['tc'], '27': ['tc'], '28': ['plaka'], '29': ['ad', 'soyad'], '30': ['ad', 'soyad'],
+                '31': ['tc'], '32': ['tc'], '33': ['tc'], '34': ['il', 'ilce'], '35': ['tc'],
+                '36': ['tc'], '37': ['tc'], '38': ['tc'], '39': ['tc'], '40': ['tc'],
+                '41': ['tc']
+            };
+
             // Input alanlarını güncelle
             function updateInputs() {
                 inputsDiv.innerHTML = '';
                 const sorguType = sorguSelect.value;
-                lastSorguType = sorguType;
-                
-                // TC gerektiren sorgular
-                const tcSorgulari = ['1', '2', '3', '5', '7', '8', '9', '10', '11', '12', '13', 
-                                     '14', '15', '19', '20', '21', '22', '23', '26', '27', '31', 
-                                     '32', '33', '35', '36', '37', '38', '39', '40', '41'];
-                
-                // Ad-Soyad gerektiren sorgular
-                const adSoyadSorgulari = ['4', '29', '30'];
-                
-                // GSM gerektiren sorgular
-                const gsmSorgulari = ['6', '17'];
-                
-                // Özel sorgular
-                if (tcSorgulari.includes(sorguType)) {
-                    addInput('tc', 'TC Kimlik No:', '11 haneli TC girin');
-                } 
-                else if (adSoyadSorgulari.includes(sorguType)) {
-                    addInput('ad', 'Ad:', 'İsim girin');
-                    addInput('soyad', 'Soyad:', 'Soyisim girin');
-                    
-                    if (sorguType === '4') {
-                        addInput('il', 'İl:', 'Şehir girin');
+                const inputs = requiredInputs[sorguType] || [];
+
+                inputs.forEach(inputName => {
+                    let labelText = '';
+                    let placeholderText = '';
+                    switch (inputName) {
+                        case 'tc':
+                            labelText = 'TC Kimlik No:';
+                            placeholderText = '11 haneli TC girin';
+                            break;
+                        case 'ad':
+                            labelText = 'Ad:';
+                            placeholderText = 'İsim girin';
+                            break;
+                        case 'soyad':
+                            labelText = 'Soyad:';
+                            placeholderText = 'Soyisim girin';
+                            break;
+                        case 'il':
+                            labelText = 'İl:';
+                            placeholderText = 'Şehir girin';
+                            break;
+                        case 'ilce':
+                            labelText = 'İlçe:';
+                            placeholderText = 'İlçe girin';
+                            break;
+                        case 'gsm':
+                            labelText = 'Telefon No:';
+                            placeholderText = '5xx xxx xx xx';
+                            break;
+                        case 'imei':
+                            labelText = 'IMEI No:';
+                            placeholderText = '15 haneli IMEI girin';
+                            break;
+                        case 'username':
+                            labelText = 'Telegram Kullanıcı Adı:';
+                            placeholderText = '@kullaniciadi';
+                            break;
+                        case 'plaka':
+                            labelText = 'Plaka:';
+                            placeholderText = '34 ABC 123';
+                            break;
                     }
-                    if (sorguType === '30') {
-                        addInput('ilce', 'İlçe:', 'İlçe girin');
-                    }
-                } 
-                else if (gsmSorgulari.includes(sorguType)) {
-                    addInput('gsm', 'Telefon No:', '5xx xxx xx xx');
-                } 
-                else if (sorguType === '16') {
-                    addInput('imei', 'IMEI No:', '15 haneli IMEI girin');
-                } 
-                else if (sorguType === '18') {
-                    addInput('username', 'Telegram Kullanıcı Adı:', '@kullaniciadi');
-                } 
-                else if (sorguType === '24' || sorguType === '28') {
-                    addInput('plaka', 'Plaka:', '34 ABC 123');
-                } 
-                else if (sorguType === '34') {
-                    addInput('il', 'İl:', 'Şehir girin');
-                    addInput('ilce', 'İlçe:', 'İlçe girin');
-                }
+                    addInput(inputName, labelText, placeholderText);
+                });
             }
-            
+
             // Input ekleme fonksiyonu
             function addInput(id, label, placeholder) {
                 const div = document.createElement('div');
                 div.innerHTML = `
                     <label for="${id}">${label}</label>
-                    <input type="text" id="${id}" placeholder="${placeholder}">
+                    <input type="text" id="${id}" placeholder="${placeholder}" class="input-field">
                 `;
                 inputsDiv.appendChild(div);
             }
-            
+
             // Bildirim göster
             function showNotification(message, type = 'success') {
                 notification.textContent = message;
-                notification.style.borderColor = type === 'success' ? '#0ea5e9' : '#f87171';
+                notification.style.borderColor = type === 'success' ? '#db2777' : '#f87171';
                 notification.classList.add('show');
-                
+
                 setTimeout(() => {
                     notification.classList.remove('show');
                 }, 3000);
             }
-            
+
             // Sorgu gönder
             async function sendQuery() {
-                const api = document.getElementById('api').value;
+                const api = apiSelect.value;
                 const sorguType = sorguSelect.value;
                 const data = { api, sorgu: sorguType };
-                
-                // Input değerlerini topla
-                const tcSorgulari = ['1', '2', '3', '5', '7', '8', '9', '10', '11', '12', '13', 
-                                   '14', '15', '19', '20', '21', '22', '23', '26', '27', '31', 
-                                   '32', '33', '35', '36', '37', '38', '39', '40', '41'];
-                const adSoyadSorgulari = ['4', '29', '30'];
-                const gsmSorgulari = ['6', '17'];
-                
-                if (tcSorgulari.includes(sorguType)) {
-                    data.tc = document.getElementById('tc')?.value.trim();
-                    if (!data.tc) {
-                        showNotification('TC kimlik numarası giriniz!', 'error');
+
+                const inputs = requiredInputs[sorguType] || [];
+                for (const inputName of inputs) {
+                    const inputElement = document.getElementById(inputName);
+                    if (!inputElement || !inputElement.value.trim()) {
+                        showNotification(`${inputName.toUpperCase()} alanı boş bırakılamaz!`, 'error');
                         return;
                     }
-                } 
-                else if (adSoyadSorgulari.includes(sorguType)) {
-                    data.ad = document.getElementById('ad')?.value.trim();
-                    data.soyad = document.getElementById('soyad')?.value.trim();
-                    
-                    if (!data.ad || !data.soyad) {
-                        showNotification('Ad ve soyad giriniz!', 'error');
-                        return;
-                    }
-                    
-                    if (sorguType === '4') {
-                        data.il = document.getElementById('il')?.value.trim();
-                        if (!data.il) {
-                            showNotification('İl bilgisi giriniz!', 'error');
-                            return;
-                        }
-                    }
-                    if (sorguType === '30') {
-                        data.ilce = document.getElementById('ilce')?.value.trim();
-                    }
-                } 
-                else if (gsmSorgulari.includes(sorguType)) {
-                    data.gsm = document.getElementById('gsm')?.value.trim();
-                    if (!data.gsm) {
-                        showNotification('Telefon numarası giriniz!', 'error');
-                        return;
-                    }
-                } 
-                else if (sorguType === '16') {
-                    data.imei = document.getElementById('imei')?.value.trim();
-                    if (!data.imei) {
-                        showNotification('IMEI numarası giriniz!', 'error');
-                        return;
-                    }
-                } 
-                else if (sorguType === '18') {
-                    data.username = document.getElementById('username')?.value.trim();
-                    if (!data.username) {
-                        showNotification('Telegram kullanıcı adı giriniz!', 'error');
-                        return;
-                    }
-                } 
-                else if (sorguType === '24' || sorguType === '28') {
-                    data.plaka = document.getElementById('plaka')?.value.trim();
-                    if (!data.plaka) {
-                        showNotification('Plaka bilgisi giriniz!', 'error');
-                        return;
-                    }
-                } 
-                else if (sorguType === '34') {
-                    data.il = document.getElementById('il')?.value.trim();
-                    data.ilce = document.getElementById('ilce')?.value.trim();
-                    if (!data.il || !data.ilce) {
-                        showNotification('İl ve ilçe bilgisi giriniz!', 'error');
-                        return;
-                    }
+                    data[inputName] = inputElement.value.trim();
                 }
-                
-                // Yükleme animasyonu
+
                 submitBtn.disabled = true;
                 buttonText.style.display = 'none';
                 loader.style.display = 'block';
                 resultDiv.textContent = 'Sorgulanıyor...';
-                
+
                 try {
                     const response = await fetch('/api/sorgu', {
                         method: 'POST',
                         headers: {
-                            'Content-Type': 'application/json',
+                            'Content-Type': 'application/json'
                         },
                         body: JSON.stringify(data)
                     });
-                    
+
                     const result = await response.json();
-                    
+
                     if (result.success) {
-                        if (sorguType === '41') {
-                            // Kombine sorgu için özel format
-                            let combinedResult = `╔════════════════════════════════════╗\n`;
-                            combinedResult += `║        KOMBİNE SORGU SONUÇLARI       ║\n`;
-                            combinedResult += `╠════════════════════════════════════╣\n`;
-                            combinedResult += `║ TC: ${data.tc}\n`;
-                            combinedResult += `║ Sorgu Tarihi: ${new Date().toLocaleString()}\n`;
-                            combinedResult += `╚════════════════════════════════════╝\n\n`;
-                            
-                            combinedResult += `╔════════════════════════════════════╗\n`;
-                            combinedResult += `║            SÜLALE BİLGİSİ          ║\n`;
-                            combinedResult += `╠════════════════════════════════════╣\n`;
-                            combinedResult += `${result.results.sulale || 'Veri bulunamadı'}\n\n`;
-                            
-                            combinedResult += `╔════════════════════════════════════╗\n`;
-                            combinedResult += `║            TC BİLGİLERİ            ║\n`;
-                            combinedResult += `╠════════════════════════════════════╣\n`;
-                            combinedResult += `${result.results.tc || 'Veri bulunamadı'}\n\n`;
-                            
-                            combinedResult += `╔════════════════════════════════════╗\n`;
-                            combinedResult += `║            ADRES BİLGİSİ           ║\n`;
-                            combinedResult += `╠════════════════════════════════════╣\n`;
-                            combinedResult += `${result.results.adres || 'Veri bulunamadı'}\n\n`;
-                            
-                            combinedResult += `╔════════════════════════════════════╗\n`;
-                            combinedResult += `║            AİLE BİLGİSİ            ║\n`;
-                            combinedResult += `╠════════════════════════════════════╣\n`;
-                            combinedResult += `${result.results.aile || 'Veri bulunamadı'}\n`;
-                            
-                            lastResult = combinedResult;
-                        } else {
-                            lastResult = result.result || result.message || 'Sonuç bulunamadı';
+                        if (result.results) { // Kombine sorgu için
+                            let combinedOutput = '';
+                            for (const key in result.results) {
+                                combinedOutput += `--- ${key.toUpperCase()} ---\n${result.results[key]}\n\n`;
+                            }
+                            lastResult = combinedOutput;
+                        } else { // Tekli sorgu için
+                            lastResult = result.result;
                         }
-                        
+                        originalResult = lastResult; // Orijinal sonucu sakla
                         resultDiv.textContent = lastResult;
                         showNotification('Sorgu başarılı!', 'success');
                     } else {
-                        lastResult = result.message || 'Sorgu başarısız!';
+                        lastResult = result.message || 'Sorgu başarısız oldu.';
+                        originalResult = lastResult;
                         resultDiv.textContent = lastResult;
                         showNotification(lastResult, 'error');
                     }
                 } catch (error) {
                     lastResult = `Hata: ${error.message}`;
-                    resultDiv.textContent = lastResult;
+                    originalResult = lastResult;
+                    resultDiv.textContent = `Bir hata oluştu: ${error.message}`;
                     showNotification('Sorgu başarısız!', 'error');
                 } finally {
                     submitBtn.disabled = false;
                     buttonText.style.display = 'block';
                     loader.style.display = 'none';
+                    filterInput.value = ''; // Filtreleme kutusunu temizle
                 }
             }
-            
+
+            // Filtreleme fonksiyonu
+            function filterResult() {
+                const filterText = filterInput.value.toLowerCase();
+                if (!filterText) {
+                    resultDiv.textContent = originalResult;
+                    return;
+                }
+
+                const lines = originalResult.split('\n');
+                const filteredLines = lines.filter(line => line.toLowerCase().includes(filterText));
+                resultDiv.textContent = filteredLines.join('\n');
+            }
+
             // Kopyala butonu
             copyBtn.addEventListener('click', () => {
                 if (!lastResult) {
                     showNotification('Kopyalanacak sonuç yok!', 'error');
                     return;
                 }
-                
-                navigator.clipboard.writeText(lastResult)
+                navigator.clipboard.writeText(resultDiv.textContent)
                     .then(() => showNotification('Panoya kopyalandı!', 'success'))
                     .catch(() => showNotification('Kopyalama başarısız!', 'error'));
             });
-            
+
             // İndir butonu
             downloadBtn.addEventListener('click', () => {
                 if (!lastResult) {
                     showNotification('İndirilecek sonuç yok!', 'error');
                     return;
                 }
-                
                 const blob = new Blob([lastResult], { type: 'text/plain' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                
-                // Sorgu tipine göre dosya adı
+
                 let fileName;
-                if (lastSorguType === '41') {
-                    const tc = document.getElementById('tc')?.value.trim() || 'kombine';
-                    fileName = `Patron_Kombine_${tc}_${new Date().toISOString().slice(0, 10)}.txt`;
-                } else {
-                    const sorguAdi = sorguSelect.options[sorguSelect.selectedIndex].text.split('-')[1].trim();
-                    fileName = `Patron_${sorguAdi}_${new Date().toISOString().slice(0, 10)}.txt`;
-                }
-                
+                const sorguAdi = sorguSelect.options[sorguSelect.selectedIndex].text.split('-')[1].trim();
+                fileName = `Patron_${sorguAdi}_${new Date().toISOString().slice(0, 10)}.txt`;
+
                 a.download = fileName;
-                
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
-                
                 showNotification('Dosya indiriliyor...', 'success');
             });
-            
+
             // Temizle butonu
             clearBtn.addEventListener('click', () => {
                 resultDiv.textContent = '';
                 lastResult = '';
+                originalResult = '';
+                filterInput.value = '';
                 showNotification('Sonuçlar temizlendi!', 'success');
             });
-            
-            // Sorgu tipi değiştiğinde inputları güncelle
+
+            // Olay dinleyicileri
             sorguSelect.addEventListener('change', updateInputs);
-            
-            // Sorgu butonu
             submitBtn.addEventListener('click', sendQuery);
-            
+            filterInput.addEventListener('input', filterResult);
+
             // İlk yüklemede inputları ayarla
             updateInputs();
         });
