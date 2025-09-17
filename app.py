@@ -1,21 +1,55 @@
 import requests
 from flask import Flask, jsonify, send_from_directory, request
 from flask_cors import CORS
+from functools import wraps
 
 app = Flask(__name__)
 CORS(app)
 
+# Gelen veriyi temizleyen ve istenmeyen ifadeleri kaldıran fonksiyon
 def filtrele_veri(metin):
     if not isinstance(metin, str):
         return ""
+
+    istenmeyen_ifadeler = ["GEÇERSİZ", "HATA", "BULUNAMADI", "NOT FOUND", "ERROR", "hata"]
+    
     satirlar = metin.strip().splitlines()
-    temiz = []
+    temiz_satirlar = []
+    
     for s in satirlar:
         s = s.strip()
-        if not s or "GEÇERSİZ" in s.upper() or s.startswith("http"):
+        # Satır boşsa veya istenmeyen bir ifade içeriyorsa atla
+        if not s or any(ifade in s.upper() for ifade in istenmeyen_ifadeler):
             continue
-        temiz.append(s)
-    return "\n".join(temiz)
+        # ID, Telegram gibi özel anahtar kelimeleri içeren satırları filtrele
+        if "id:" in s.lower() or "telegram" in s.lower() or "kullaniciadi:" in s.lower() or "link:" in s.lower():
+            continue
+        # Gereksiz boşlukları ve karakterleri temizle
+        s = s.replace(":", ": ").replace("  ", " ").strip()
+        temiz_satirlar.append(s)
+
+    return "\n".join(temiz_satirlar)
+
+# API isteklerini yöneten ve hata yakalayan merkezi fonksiyon
+def sorgu_isteği_yap(url, headers):
+    try:
+        response = requests.get(url, headers=headers, timeout=90, verify=False)
+        
+        # HTTP hatalarını yakala (örn. 404, 500)
+        response.raise_for_status() 
+
+        # Gelen veriyi filtrele
+        filtrelenmis = filtrele_veri(response.text)
+        
+        if filtrelenmis:
+            return jsonify(success=True, result=filtrelenmis)
+        else:
+            return jsonify(success=False, message="Veri bulunamadı veya geçersiz. Lütfen girdiğiniz bilgileri kontrol edin.")
+    
+    except requests.exceptions.HTTPError as http_err:
+        return jsonify(success=False, message=f"API hatası: {http_err.response.status_code} - API sunucusuyla bağlantı kurulamıyor. Lütfen daha sonra tekrar deneyin."), http_err.response.status_code
+    except requests.exceptions.RequestException as req_err:
+        return jsonify(success=False, message=f"İstek hatası: API ile iletişim kurulamadı. Sunucu adresi yanlış olabilir."), 500
 
 @app.route("/")
 def anasayfa():
@@ -41,7 +75,7 @@ def sorgu():
     username = data.get("username", "")
     plaka = data.get("plaka", "")
     ilce = data.get("ilce", "")
-    
+
     url = ""
     base_url = "https://hanedansystem.alwaysdata.net/hanesiz" if api == "1" else "https://api.hexnox.pro/sowixapi"
 
@@ -126,47 +160,28 @@ def sorgu():
     elif sorgu_tipi == "40":
         url = f"{base_url}/isyeri.php?tc={tc}"
     elif sorgu_tipi == "41":
-        # Kombine sorgu (1, 2, 3 ve 5)
-        try:
-            results = {}
-            
-            # Sorgu 1 (Sülale)
-            url1 = f"{base_url}/sulale.php?tc={tc}"
-            response1 = requests.get(url1, headers=headers, timeout=90, verify=False)
-            results['sulale'] = filtrele_veri(response1.text) if response1.status_code == 200 else "Sorgu başarısız"
-            
-            # Sorgu 2 (TC)
-            url2 = f"{base_url}/tc.php?tc={tc}" if api == "1" else f"{base_url}/tcpro.php?tc={tc}"
-            response2 = requests.get(url2, headers=headers, timeout=90, verify=False)
-            results['tc'] = filtrele_veri(response2.text) if response2.status_code == 200 else "Sorgu başarısız"
-            
-            # Sorgu 3 (Adres)
-            url3 = f"{base_url}/adres.php?tc={tc}"
-            response3 = requests.get(url3, headers=headers, timeout=90, verify=False)
-            results['adres'] = filtrele_veri(response3.text) if response3.status_code == 200 else "Sorgu başarısız"
-            
-            # Sorgu 5 (Aile)
-            url5 = f"{base_url}/aile.php?tc={tc}"
-            response5 = requests.get(url5, headers=headers, timeout=90, verify=False)
-            results['aile'] = filtrele_veri(response5.text) if response5.status_code == 200 else "Sorgu başarısız"
-            
-            return jsonify(success=True, results=results)
-            
-        except requests.exceptions.RequestException as e:
-            return jsonify(success=False, message=f"Hata: {str(e)}")
+        # Kombine sorgu için özel durum
+        results = {}
+        sorgular = [
+            ("sulale", f"{base_url}/sulale.php?tc={tc}"),
+            ("tc", f"{base_url}/tc.php?tc={tc}" if api == "1" else f"{base_url}/tcpro.php?tc={tc}"),
+            ("adres", f"{base_url}/adres.php?tc={tc}"),
+            ("aile", f"{base_url}/aile.php?tc={tc}")
+        ]
+
+        for ad, sorgu_url in sorgular:
+            response = requests.get(sorgu_url, headers=headers, timeout=90, verify=False)
+            if response.status_code == 200:
+                results[ad] = filtrele_veri(response.text)
+            else:
+                results[ad] = f"Hata: {response.status_code} - {response.reason}"
+        
+        return jsonify(success=True, results=results)
     else:
         return jsonify(success=False, message="Geçersiz sorgu tipi"), 400
 
-    try:
-        response = requests.get(url, headers=headers, timeout=90, verify=False)
-        response.raise_for_status()
-        filtrelenmis = filtrele_veri(response.text)
-        if filtrelenmis:
-            return jsonify(success=True, result=filtrelenmis)
-        else:
-            return jsonify(success=False, message="Veri bulunamadı veya geçersiz")
-    except requests.exceptions.RequestException as e:
-        return jsonify(success=False, message=f"Hata: {str(e)}")
+    # Diğer tüm sorgular için ortak işlev
+    return sorgu_isteği_yap(url, headers)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
