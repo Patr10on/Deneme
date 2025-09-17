@@ -1,107 +1,146 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8" />
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Giriş - PATRON</title>
 <style>
-  body {
-    background: #000;
-    color: #c0f7ff;
-    font-family: Arial, sans-serif;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    margin: 0;
-  }
-  .login-wrapper {
-    background: #000000cc;
-    padding: 2em;
-    border-radius: 12px;
-    box-shadow: 0 0 20px #00eaffaa;
-    width: 320px;
-  }
-  h2 {
-    margin-bottom: 1em;
-    color: #00eaff;
-    text-align: center;
-  }
-  form {
-    display: flex;
-    flex-direction: column;
-  }
-  input {
-    background: #122638;
-    border: none;
-    border-radius: 8px;
-    color: #d4f1ff;
-    padding: 12px;
-    margin-bottom: 1em;
-    font-size: 16px;
-    outline: none;
-  }
-  input:focus {
-    box-shadow: 0 0 10px #00eaffcc;
-  }
-  button {
-    background: #0a1a2a;
-    color: #00eaff;
-    font-weight: bold;
-    padding: 12px;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    box-shadow: 0 0 15px #00eaff99;
-  }
-  button:hover {
-    background: #00eaff11;
-    color: #002f4b;
-    box-shadow: 0 0 30px #00eaffcc;
-  }
-  .error {
-    color: #ff5555;
-    font-weight: 600;
-    text-align: center;
-    display: none;
-    margin-top: 0.5em;
-  }
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap');
+
+:root {
+    --bg-color: #020617;
+    --primary: #0ea5e9;
+    --secondary: #67e8f9;
+    --text: #e2e8f0;
+    --panel-bg: rgba(15, 23, 42, 0.6);
+    --border: rgba(56, 189, 248, 0.3);
+    --error: #ef4444;
+    --panel-glow: rgba(14, 165, 233, 0.1);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; font-family:'Roboto Mono', monospace; }
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text);
+    min-height: 100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:20px;
+}
+
+h2 {
+    font-size: clamp(1.8rem,5vw,2.5rem);
+    color: var(--primary);
+    text-shadow:0 0 10px var(--primary),0 0 20px var(--primary);
+    letter-spacing:3px;
+    text-align:center;
+    margin-bottom:1.5rem;
+}
+
+.login-wrapper {
+    background: var(--panel-bg);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:40px;
+    backdrop-filter:blur(10px);
+    box-shadow:0 0 20px var(--panel-glow);
+    width:100%;
+    max-width:400px;
+    text-align:center;
+    transition:transform 0.3s, box-shadow 0.3s;
+}
+
+.login-wrapper:hover {
+    transform:translateY(-5px);
+    box-shadow:5px 30px var(--panel-glow);
+}
+
+form { display:flex; flex-direction:column; text-align:left; }
+
+input {
+    width:100%;
+    padding:12px;
+    margin-bottom:20px;
+    background: rgba(2,6,23,0.5);
+    border:1px solid var(--border);
+    border-radius:5px;
+    color: var(--text);
+    transition: all 0.3s ease;
+}
+
+input:focus {
+    outline:none;
+    border-color: var(--primary);
+    box-shadow:0 0 8px rgba(14,165,233,0.5);
+}
+
+button {
+    background: var(--primary);
+    color: var(--bg-color);
+    border:none;
+    padding:15px;
+    border-radius:5px;
+    cursor:pointer;
+    font-weight:bold;
+    width:100%;
+    margin-top:10px;
+    transition: all 0.3s;
+}
+
+button:hover {
+    background: var(--secondary);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(103, 232, 249, 0.3);
+}
+
+.error {
+    color: var(--error);
+    font-weight:600;
+    text-align:center;
+    display:none;
+    margin-top:0.5em;
+}
+
+.links {
+    margin-top:15px;
+    font-size:0.9rem;
+    text-align:center;
+}
+
+.links a {
+    color: var(--secondary);
+    text-decoration:none;
+    transition: color 0.3s;
+}
+
+.links a:hover {
+    color: var(--primary);
+    text-decoration:underline;
+}
 </style>
 </head>
 <body>
   <div class="login-wrapper">
     <h2>Giriş Paneli</h2>
-    <form action="/login" method="POST" autocomplete="off" id="loginForm">
+    <form id="loginForm">
       <input type="text" name="username" placeholder="Kullanıcı Adı" required />
       <input type="password" name="password" placeholder="Şifre" required />
       <button type="submit">Giriş Yap</button>
       <p class="error" id="errorMsg">Geçersiz kullanıcı adı veya şifre.</p>
     </form>
+    <div class="links">
+        <a href="https://instagram.com/by_.r4t" target="_blank">Satın Alma</a> | 
+        <a href="https://instagram.com/by_.r4t" target="_blank">Yardım</a>
+    </div>
   </div>
-  <script>
-    // Basit client-side hata mesajı gösterme (backend yanıtına göre ayarlanabilir)
-    const form = document.getElementById('loginForm');
-    const errorMsg = document.getElementById('errorMsg');
-    
-    form.addEventListener('submit', (e) => {
-      // Burada istersen Ajax ile gönderip hata yakalayabilirsin,
-      // ama Flask backend ile klasik form POST kullanıyorsan
-      // bu script'i kaldırabilirsin veya backend yönlendirmelerini kullan.
-      errorMsg.style.display = 'none';
-    });
-  </script>
-</body>
-</html>ername" />
-    <input type="password" id="password" placeholder="Şifre" required autocomplete="current-password" />
-    <button type="submit" class="glow-button">Giriş Yap</button>
-    <p id="errorMsg" class="error">Kullanıcı adı veya şifre yanlış!</p>
-  </form>
-</div>
 
 <script>
   const form = document.getElementById("loginForm");
   const errorMsg = document.getElementById("errorMsg");
 
+  // Kullanıcılar array'i eski mantık gibi JS içinde
   const users = [
     { user: "admin", pass: "patronsorgu" },
     { user: "kaneki", pass: "ghoul123" }
@@ -117,36 +156,13 @@
     const match = users.find(u => u.user === username && u.pass === password);
 
     if (match) {
-      // Giriş başarılı - gerçek projede burada sunucuya istek yapılmalı
+      // Giriş başarılı
       window.location.href = "/anasayfa"; 
     } else {
       errorMsg.style.display = "block";
-      errorMsg.style.animation = "none";
-      errorMsg.offsetHeight; // restart animation
-      errorMsg.style.animation = null;
       form.password.focus();
     }
   });
 </script>
-
 </body>
-</html>    {% endwith %}
-        </form>
-    </div>
-
-    <script>
-        const form = document.getElementById('loginForm');
-        const errorMsg = document.querySelector('.error');
-        
-        if (errorMsg) {
-            // Hata mesajını 5 saniye sonra gizle
-            setTimeout(() => {
-                errorMsg.classList.add('hidden');
-            }, 5000);
-        }
-    </script>
-</body>
-</html>>
-</body>
-</html>>
 </html>
