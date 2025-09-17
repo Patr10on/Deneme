@@ -94,7 +94,7 @@ def sorgu():
     elif sorgu_tipi == "24":
         url = f"https://hexnox.pro/sowixfree/plaka.php?plaka={plaka}"
     elif sorgu_tipi == "25":
-        url = "https://www.instagram.com/by_.r4t?igsh=cTV2OGhoYzdydzk5"
+        url = "https://www.instagram.com/by_.r4t/posts/?l=1"
     elif sorgu_tipi == "26":
         url = f"https://hexnox.pro/sowixfree/sertifika.php?tc={tc}"
     elif sorgu_tipi == "27":
