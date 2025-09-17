@@ -167,7 +167,7 @@ def sorgu():
     ilce = data.get("ilce", "")
     
     url = ""
-    base_url = "https://wazelyapi.vercel.app/api" if api == "1" else "https://api.hexnox.pro/sowixapi"
+    base_url = "https://hanedansystem.alwaysdata.net/hanesiz" if api == "1" else "https://api.hexnox.pro/sowixapi"
 
     if sorgu_tipi == "1":
         url = f"{base_url}/sulale.php?tc={tc}"
