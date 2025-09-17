@@ -5,14 +5,14 @@
         "ip": "127.0.0.1",
         "device": "Linux-4.19.321-ge01b96d7bb93-aarch64-with-libc"
     },
-    "Ecrinreis": {
-        "password": "ecrin123",
+    "Selo": {
+        "password": "selo123",
         "banned": false,
         "ip": "127.0.0.1",
         "device": "Linux-4.19.321-ge01b96d7bb93-aarch64-with-libc"
     },
-    "Deneme": {
-        "password": "123456789",
+    "ömer": {
+        "password": "ömer123",
         "banned": false,
         "ip": "127.0.0.1",
         "device": "Linux-4.19.321-ge01b96d7bb93-aarch64-with-libc"
