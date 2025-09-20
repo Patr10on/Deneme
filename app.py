@@ -47,8 +47,8 @@ def login_post():
 
     if username in users and users[username]["password"] == password:
         if users[username]["banned"]:
-            return "Bu kullanıcı yasaklanmıştır.", 403
-        
+            return "Bu kullanıcının süresi dolmuştur uzatmak icin insta @by_.r4t", 403
+
         session.permanent = True
         session["username"] = username
         users[username]["ip"] = ip_al()
@@ -59,7 +59,7 @@ def login_post():
             return redirect("/admin")
         else:
             return redirect("/anasayfa")
-            
+
     return "Geçersiz kullanıcı adı veya şifre.", 401
 
 @app.route("/anasayfa")
@@ -84,7 +84,7 @@ def api_users():
 def api_add_user():
     if session.get("username") != "admin":
         return jsonify(error="Yetkiniz yok"), 403
-    
+
     data = request.json
     users = kullanicilari_yukle()
     username = data.get("username")
@@ -94,7 +94,7 @@ def api_add_user():
         return jsonify(error="Eksik bilgi"), 400
     if username in users:
         return jsonify(error="Kullanıcı zaten mevcut"), 400
-        
+
     users[username] = {
         "password": password,
         "banned": False,
@@ -108,7 +108,7 @@ def api_add_user():
 def api_ban_user():
     if session.get("username") != "admin":
         return jsonify(error="Yetkiniz yok"), 403
-    
+
     data = request.json
     username = data.get("username")
     users = kullanicilari_yukle()
@@ -122,7 +122,7 @@ def api_ban_user():
 def api_unban_user():
     if session.get("username") != "admin":
         return jsonify(error="Yetkiniz yok"), 403
-    
+
     data = request.json
     username = data.get("username")
     users = kullanicilari_yukle()
@@ -165,7 +165,7 @@ def sorgu():
     username = data.get("username", "")
     plaka = data.get("plaka", "")
     ilce = data.get("ilce", "")
-    
+
     url = ""
     base_url = "https://hanedansystem.alwaysdata.net/hanesiz" if api == "1" else "https://api.hexnox.pro/sowixapi"
 
@@ -253,29 +253,29 @@ def sorgu():
         # Kombine sorgu (1, 2, 3 ve 5)
         try:
             results = {}
-            
+
             # Sorgu 1 (Sülale)
             url1 = f"{base_url}/sulale.php?tc={tc}"
             response1 = requests.get(url1, headers=headers, timeout=90)
             results['sulale'] = filtrele_veri(response1.text) if response1.status_code == 200 else "Sorgu başarısız"
-            
+
             # Sorgu 2 (TC)
             url2 = f"{base_url}/tc.php?tc={tc}" if api == "1" else f"{base_url}/tcpro.php?tc={tc}"
             response2 = requests.get(url2, headers=headers, timeout=90)
             results['tc'] = filtrele_veri(response2.text) if response2.status_code == 200 else "Sorgu başarısız"
-            
+
             # Sorgu 3 (Adres)
             url3 = f"{base_url}/adres.php?tc={tc}"
             response3 = requests.get(url3, headers=headers, timeout=90)
             results['adres'] = filtrele_veri(response3.text) if response3.status_code == 200 else "Sorgu başarısız"
-            
+
             # Sorgu 5 (Aile)
             url5 = f"{base_url}/aile.php?tc={tc}"
             response5 = requests.get(url5, headers=headers, timeout=90)
             results['aile'] = filtrele_veri(response5.text) if response5.status_code == 200 else "Sorgu başarısız"
-            
+
             return jsonify(success=True, results=results)
-            
+
         except requests.exceptions.RequestException as e:
             return jsonify(success=False, message=f"Hata: {str(e)}")
     else:
